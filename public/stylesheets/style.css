@@ -22,6 +22,21 @@ body {
     border-radius: 1rem;
 }
 
+.phonetics {
+    font-size: 1.15rem;
+    font-weight: normal;
+}
+
+.speaker {
+    border: none;
+    background-color: white;
+    font-size: 1.1rem;
+}
+
+.speaker:focus{
+    outline: none;
+}
+
 /* To overwrite Bootstrap's default border-right issue. => */
 
 input-group>.custom-select:not(:last-child), .input-group>.form-control:not(:last-child) {

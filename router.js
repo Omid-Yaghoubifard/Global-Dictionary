@@ -10,26 +10,70 @@ const express            = require("express"),
 
 // Homepage
 router.get("/", (req,res) => {
+    let path = req.route.path;
     res.render("home", {
         currentYear,
         user: req.user,
-        messages: [req.flash("loggedOut")]
+        path,
+        messages: [req.flash("loggedOut"), req.flash("noResult")]
     });
 })
 
 // show
 router.get("/index", (req,res) => {
-    let query = req.query;
-    res.render("show",{
-        currentYear,
-        user: req.user
+    let query = req.query.query;
+    let path = req.route.path;
+    axios.all([
+        axios({
+            "method":"GET",
+            "url": `https://wordsapiv1.p.rapidapi.com/words/${query}`,
+            "headers":{
+            "content-type": "application/octet-stream",
+            "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+            "x-rapidapi-key": process.env.WORDSAPI,
+            "useQueryString": true
+            }
+        }),
+        axios({
+            "method":"GET",
+            "url": `https://lingua-robot.p.rapidapi.com/language/v1/entries/en/${query}`,
+            "headers":{
+            "content-type":"application/octet-stream",
+            "x-rapidapi-host":"lingua-robot.p.rapidapi.com",
+            "x-rapidapi-key": process.env.linguaRobot,
+            "useQueryString":true
+            }
+        })
+    ])
+    .then((responses)=>{
+        let wordsApi = responses[0].data;
+        // console.log(wordsApi);
+        let linguaRobot;
+        if(responses[1].data && responses[1].data.entries[0].pronunciations){
+            linguaRobot = responses[1].data.entries[0].pronunciations[0];
+        }
+        // console.log(linguaRobot);
+        res.render("show",{
+            currentYear,
+            path,
+            wordsApi,
+            linguaRobot,
+            user: req.user
+        })
+    })
+    .catch((error)=>{
+        req.flash("noResult", "Please make sure you have typed the word correctly.");
+        console.log(error);
+        res.redirect("/")
     })
 });
 
 // Sign up
 router.get("/signup", isNotLoggedIn, (req,res) => {
+    let path = req.route.path;
     res.render("signup", {
         currentYear,
+        path,
         user: req.user,
         messages: [req.flash("passwordMatch"), req.flash("signUpUserError"), req.flash("signUpEmailError")]
     });
@@ -74,8 +118,10 @@ router.post("/signup", isNotLoggedIn,
 
 // Log in
 router.get("/login", isNotLoggedIn, (req,res) => {
+    let path = req.route.path;
     res.render("login", {
         currentYear,
+        path,
         user: req.user,
         messages: [req.flash("failedLogIn"), req.flash("PleaseLogIn")]
     });
@@ -108,16 +154,20 @@ router.get("/logout", isLoggedIn, (req, res) => {
 
 // profile
 router.get("/profile", isLoggedIn, (req,res) => {
+    let path = req.route.path;
     res.render("profile", {
         currentYear,
+        path,
         user: req.user
     })
 });
 
 // Change password
 router.get("/profile/edit", isLoggedIn, (req,res) => {
+    let path = req.route.path;
     res.render("profileEdit", {
         currentYear,
+        path,
         user: req.user,
         messages: [req.flash("passwordMatch"), req.flash("passwordChangeError")]
     });
@@ -155,8 +205,10 @@ router.post("/profile", isLoggedIn,
 
 // Test your knowledge on what you have searched for!
 router.get("/test", (req,res) => {
+    let path = req.route.path;
     res.render("test", {
         currentYear,
+        path,
         user: req.user
     })
 })

@@ -1,10 +1,82 @@
 <%- include("partials/header") %>
 
 
-<!-- The results should be divided by their souce APIs. This gives the results more credability.
+<!-- The results should be divided by their source APIs. This gives the results more credability.
 
 On the sidebar we should have a list of latest search queries and test link (if logged in)
 if not logged in we should invite the user to log in. -->
+
+
+<div class="container mt-5 pt-5">
+    <div class="card border-light mb-3">
+        <div class="card-body text-secondary">
+            <h3 class="card-title mb-5"><%= wordsApi.word %> 
+                <span class="phonetics">
+                    <% if (wordsApi.pronunciation){ %>
+                        <% if (wordsApi.pronunciation.noun){ %>
+                            <strong>noun</strong> /<%= wordsApi.pronunciation.noun %>/
+                        <% } if (wordsApi.pronunciation.verb){ %>
+                            <strong>verb</strong> /<%= wordsApi.pronunciation.verb %>/
+                        <% } else if (wordsApi.pronunciation.all){ %>
+                            /<%= wordsApi.pronunciation.all %>/
+                        <% } %>
+                    <% } %>
+                </span>
+                <% if (linguaRobot && linguaRobot.audio){ %>
+                    <audio id="player" src="<%= linguaRobot.audio.url %>">pronunciation</audio>
+                    <button onclick="document.getElementById('player').play()" class="speaker">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                <% } %>
+            </h3>
+            <hr>
+            <div class="card-text">
+                <% wordsApi.results.forEach((def, i) => { %>
+                    <div class="mb-4">
+                        <h6 class="text-success"><%= i+1 %>. (<%= def.partOfSpeech %>) <%= def.definition %> </h6>
+                        <% if (def.examples){ %>
+                            <% for(let example of def.examples){ %>
+                                <% let casedExample = example.charAt(0).toUpperCase() + example.slice(1); %>
+                                <% let dot; %>
+                                <% if ((casedExample.indexOf(".") === -1) && (casedExample.indexOf("!") === -1) && (casedExample.indexOf("?") === -1)){ %>
+                                    <% dot = "." %>
+                                <% } %>
+                                <% if (dot){ %>
+                                    <p><strong>e.g.</strong> <%= casedExample + dot %> </p>
+                                <% } else{ %>
+                                    <p><strong>e.g.</strong> <%= casedExample %> </p>
+                                <% } %>
+                            <% } %>
+                        <% } %>
+                        <% if (def.synonyms){ %>
+                            <p><strong>syn</strong>
+                            <% for(let [idx, synonym] of def.synonyms.entries()){ %>
+                                <% if (idx < def.synonyms.length-1){ %>
+                                    <a href="/index?query=<%= synonym %>"><%= synonym %></a>,  
+                                <% } else{ %>
+                                    <a href="/index?query=<%= synonym %>"><%= synonym %></a>
+                                <% } %>
+                            <% } %>                        
+                            </p>
+                        <% } %>
+                        <% if (def.antonyms){ %>
+                            <p><strong>anti</strong>
+                            <% for(let [idx, antonym] of def.antonyms.entries()){ %>
+                                <% if (idx < def.antonyms.length-1){ %>
+                                    <a href="/index?query=<%= antonym %>"><%= antonym %></a>,  
+                                <% } else{ %>
+                                    <a href="/index?query=<%= antonym %>"><%= antonym %></a>
+                                <% } %>
+                            <% } %>                        
+                            </p>
+                        <% } %>
+                    </div>
+                <% }) %>
+            </div>
+        </div>
+        <div class="card-footer bg-transparent border-light">Footer</div>
+    </div>
+</div>
 
 
 <%- include("partials/footer") %>
