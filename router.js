@@ -21,8 +21,20 @@ router.get("/", (req,res) => {
 
 // show
 router.get("/index", (req,res) => {
-    let query = req.query.query;
+    let query = req.query.query.trim().toLowerCase();
     let path = req.route.path;
+    let wordsApi;
+    let wordPronunciation;
+    let unsplash;
+    axios.get(
+        `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${query}--_us_1.mp3`
+    )
+    .then((resolved)=>{
+        wordPronunciation = `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${query}--_us_1.mp3`;
+    })
+    .catch((err)=>{
+        wordPronunciation = undefined;
+    })
     axios.all([
         axios({
             "method":"GET",
@@ -30,7 +42,7 @@ router.get("/index", (req,res) => {
             "headers":{
             "content-type": "application/octet-stream",
             "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
-            "x-rapidapi-key": process.env.WORDSAPI,
+            "x-rapidapi-key": process.env.RAPIDAPI,
             "useQueryString": true
             }
         }),
@@ -40,32 +52,68 @@ router.get("/index", (req,res) => {
             "headers":{
             "content-type":"application/octet-stream",
             "x-rapidapi-host":"lingua-robot.p.rapidapi.com",
-            "x-rapidapi-key": process.env.linguaRobot,
+            "x-rapidapi-key": process.env.RAPIDAPI,
             "useQueryString":true
             }
-        })
+        }),
+        axios.get(
+          `https://api.unsplash.com/search/photos/?page=1&per_page=1&query=${query}&client_id=${process.env.UNSPLASHACCESSKEY}`
+        )
     ])
     .then((responses)=>{
-        let wordsApi = responses[0].data;
-        // console.log(wordsApi);
-        let linguaRobot;
-        if(responses[1].data && responses[1].data.entries[0].pronunciations){
-            linguaRobot = responses[1].data.entries[0].pronunciations[0];
+        if (responses[0].data){
+            wordsApi = responses[0].data;
         }
-        // console.log(linguaRobot);
+        // console.log(wordsApi);
+        if(!wordPronunciation && responses[1].data && responses[1].data.entries && responses[1].data.entries[0] && responses[1].data.entries[0].pronunciations && responses[1].data.entries[0].pronunciations[0] && responses[1].data.entries[0].pronunciations[0].audio){
+            wordPronunciation = responses[1].data.entries[0].pronunciations[0].audio.url;
+        }
+        // console.log(wordPronunciation);
+        if(responses[2].data.results[0] && responses[2].data.results[0].urls.small){
+            unsplash = responses[2].data.results[0].urls.small;
+        }
+        // console.log(unsplash);
         res.render("show",{
             currentYear,
             path,
             wordsApi,
-            linguaRobot,
+            wordPronunciation,
+            unsplash,
             user: req.user
         })
     })
     .catch((error)=>{
         req.flash("noResult", "Please make sure you have typed the word correctly.");
-        console.log(error);
+        // console.log(error);
         res.redirect("/")
     })
+});
+
+router.get("/exampleSearching", (req, res) => {
+    let val = req.query.search;
+    axios({
+        "method":"GET",
+        "url":"https://twinword-word-graph-dictionary.p.rapidapi.com/example/",
+        "headers":{
+        "content-type":"application/octet-stream",
+        "x-rapidapi-host":"twinword-word-graph-dictionary.p.rapidapi.com",
+        "x-rapidapi-key": process.env.RAPIDAPI,
+        "useQueryString":true
+        },"params":{
+        "entry": val
+        }
+        })
+        .then((response)=>{
+            if (response.data && response.data.example) {
+                // console.log(response.data)
+                res.send(response.data.example);
+            } else {
+                res.send(undefined)
+            }
+        })
+        .catch((error)=>{
+            res.redirect(`/index?query=${val}`)
+        })
 });
 
 // Sign up

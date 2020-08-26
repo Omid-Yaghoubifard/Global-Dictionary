@@ -8,75 +8,105 @@ if not logged in we should invite the user to log in. -->
 
 
 <div class="container mt-5 pt-5">
-    <div class="card border-light mb-3">
-        <div class="card-body text-secondary">
-            <h3 class="card-title mb-5"><%= wordsApi.word %> 
-                <span class="phonetics">
-                    <% if (wordsApi.pronunciation){ %>
-                        <% if (wordsApi.pronunciation.noun){ %>
-                            <strong>noun</strong> /<%= wordsApi.pronunciation.noun %>/
-                        <% } if (wordsApi.pronunciation.verb){ %>
-                            <strong>verb</strong> /<%= wordsApi.pronunciation.verb %>/
-                        <% } else if (wordsApi.pronunciation.all){ %>
-                            /<%= wordsApi.pronunciation.all %>/
+    <% if (wordsApi){ %>
+        <div class="row">
+            <div class="col-md-8 card border-light mb-3">
+                <div class="card-body text-secondary">
+                    <h3 class="card-title mb-5">
+                        <% if (wordsApi.frequency && wordsApi.frequency > 3.5){ %>
+                            <i class="fas fa-key key"></i> 
                         <% } %>
-                    <% } %>
-                </span>
-                <% if (linguaRobot && linguaRobot.audio){ %>
-                    <audio id="player" src="<%= linguaRobot.audio.url %>">pronunciation</audio>
-                    <button onclick="document.getElementById('player').play()" class="speaker">
-                        <i class="fas fa-volume-up"></i>
-                    </button>
-                <% } %>
-            </h3>
-            <hr>
-            <div class="card-text">
-                <% wordsApi.results.forEach((def, i) => { %>
-                    <div class="mb-4">
-                        <h6 class="text-success"><%= i+1 %>. (<%= def.partOfSpeech %>) <%= def.definition %> </h6>
-                        <% if (def.examples){ %>
-                            <% for(let example of def.examples){ %>
-                                <% let casedExample = example.charAt(0).toUpperCase() + example.slice(1); %>
-                                <% let dot; %>
-                                <% if ((casedExample.indexOf(".") === -1) && (casedExample.indexOf("!") === -1) && (casedExample.indexOf("?") === -1)){ %>
-                                    <% dot = "." %>
-                                <% } %>
-                                <% if (dot){ %>
-                                    <p><strong>e.g.</strong> <%= casedExample + dot %> </p>
-                                <% } else{ %>
-                                    <p><strong>e.g.</strong> <%= casedExample %> </p>
+                        <%= wordsApi.word %> 
+                        <span class="phonetics">
+                            <% if (wordsApi.pronunciation){ %>
+                                <% if (wordsApi.pronunciation.noun){ %>
+                                    <strong>noun</strong> /<%= wordsApi.pronunciation.noun %>/
+                                <% } if (wordsApi.pronunciation.verb){ %>
+                                    <strong>verb</strong> /<%= wordsApi.pronunciation.verb %>/
+                                <% } else if (wordsApi.pronunciation.all){ %>
+                                    /<%= wordsApi.pronunciation.all %>/
+                                <% } else if (wordsApi.pronunciation && wordsApi.pronunciation.length){ %>
+                                    /<%= wordsApi.pronunciation %>/
                                 <% } %>
                             <% } %>
-                        <% } %>
-                        <% if (def.synonyms){ %>
-                            <p><strong>syn</strong>
-                            <% for(let [idx, synonym] of def.synonyms.entries()){ %>
-                                <% if (idx < def.synonyms.length-1){ %>
-                                    <a href="/index?query=<%= synonym %>"><%= synonym %></a>,  
-                                <% } else{ %>
-                                    <a href="/index?query=<%= synonym %>"><%= synonym %></a>
-                                <% } %>
-                            <% } %>                        
-                            </p>
-                        <% } %>
-                        <% if (def.antonyms){ %>
-                            <p><strong>anti</strong>
-                            <% for(let [idx, antonym] of def.antonyms.entries()){ %>
-                                <% if (idx < def.antonyms.length-1){ %>
-                                    <a href="/index?query=<%= antonym %>"><%= antonym %></a>,  
-                                <% } else{ %>
-                                    <a href="/index?query=<%= antonym %>"><%= antonym %></a>
-                                <% } %>
-                            <% } %>                        
-                            </p>
-                        <% } %>
+                        </span>
+                            <% if (wordPronunciation){ %>
+                                <audio id="player" src="<%= wordPronunciation %>">pronunciation</audio>
+                                <button onclick="document.getElementById('player').play()" class="speaker">
+                                    <i class="fas fa-volume-up"></i>
+                                </button>
+                            <% } %>
+                    </h3>
+                    <hr>
+                    <div class="card-text">
+                        <% if (wordsApi.results){ %>
+                            <% wordsApi.results.forEach((def, i) => { %>
+                                <div class="mb-4">
+                                    <h6 class="text-success">
+                                        <% if (wordsApi.results.length > 1){ %>
+                                            <%= i+1 %>. 
+                                        <% } %>
+                                        <% if(def.partOfSpeech){ %>
+                                            (<%= def.partOfSpeech %>) 
+                                        <% } %>
+                                        <%= def.definition %>
+                                    </h6>
+                                    <% if (def.examples){ %>
+                                        <% for(let example of def.examples){ %>
+                                            <% let casedExample = example.charAt(0).toUpperCase() + example.slice(1); %>
+                                            <% let dot; %>
+                                            <% if ((casedExample.indexOf(".") === -1) && (casedExample.indexOf("!") === -1) && (casedExample.indexOf("?") === -1)){ %>
+                                                <% dot = "." %>
+                                            <% } %>
+                                            <% if (dot){ %>
+                                                <p><strong>e.g.</strong> <%= casedExample + dot %> </p>
+                                            <% } else{ %>
+                                                <p><strong>e.g.</strong> <%= casedExample %> </p>
+                                            <% } %>
+                                        <% } %>
+                                    <% } %>
+                                    <% if (def.synonyms){ %>
+                                        <p><strong>syn</strong>
+                                        <% for(let [idx, synonym] of def.synonyms.entries()){ %>
+                                            <% if (idx < def.synonyms.length-1){ %>
+                                                <a href="/index?query=<%= synonym %>"><%= synonym %></a>,  
+                                            <% } else{ %>
+                                                <a href="/index?query=<%= synonym %>"><%= synonym %></a>
+                                            <% } %>
+                                        <% } %>                        
+                                        </p>
+                                    <% } %>
+                                    <% if (def.antonyms){ %>
+                                        <p><strong>anti</strong>
+                                        <% for(let [idx, antonym] of def.antonyms.entries()){ %>
+                                            <% if (idx < def.antonyms.length-1){ %>
+                                                <a href="/index?query=<%= antonym %>"><%= antonym %></a>,  
+                                            <% } else{ %>
+                                                <a href="/index?query=<%= antonym %>"><%= antonym %></a>
+                                            <% } %>
+                                        <% } %>                        
+                                        </p>
+                                    <% } %>
+                                </div>
+                            <% }) %>
+                        <% }%>
                     </div>
-                <% }) %>
+                    <hr>
+                    <div>
+                        <button type="submit" value=" <%= wordsApi.word %> " class="btn btn-primary" id="ExampleRequest">More Examples</button>
+                        <div id="moreExamples"></div>
+                    </div>
+                </div>
             </div>
+            <% if (unsplash){ %>
+                <div class="col-md-4 mt-5 mb-5">
+                    <div class="card">
+                        <img class="card-img-top" src="<%= unsplash %>" alt="">
+                    </div>
+                </div>
+            <% } %>
         </div>
-        <div class="card-footer bg-transparent border-light">Footer</div>
-    </div>
+    <% } %>
 </div>
-
 
 <%- include("partials/footer") %>
