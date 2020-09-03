@@ -69,10 +69,10 @@ router.get("/index", (req,res) => {
             wordPronunciation = responses[1].data.entries[0].pronunciations[0].audio.url;
         }
         // console.log(wordPronunciation);
-        if(responses[2].data.results[0] && responses[2].data.results[0].urls.small){
+        if(wordsApi.frequency && responses[2].data.results[0] && responses[2].data.results[0].urls.small){
             unsplash = responses[2].data.results[0].urls.small;
         }
-        // console.log(unsplash);
+        // console.log(responses[2].data);
         res.render("show",{
             currentYear,
             path,
@@ -95,25 +95,44 @@ router.get("/exampleSearching", (req, res) => {
         "method":"GET",
         "url":"https://twinword-word-graph-dictionary.p.rapidapi.com/example/",
         "headers":{
-        "content-type":"application/octet-stream",
-        "x-rapidapi-host":"twinword-word-graph-dictionary.p.rapidapi.com",
-        "x-rapidapi-key": process.env.RAPIDAPI,
-        "useQueryString":true
-        },"params":{
-        "entry": val
+            "content-type":"application/octet-stream",
+            "x-rapidapi-host":"twinword-word-graph-dictionary.p.rapidapi.com",
+            "x-rapidapi-key": process.env.RAPIDAPI,
+            "useQueryString":true
+        },
+        "params":{
+            "entry": val
         }
-        })
-        .then((response)=>{
-            if (response.data && response.data.example) {
-                // console.log(response.data)
-                res.send(response.data.example);
-            } else {
-                res.send(undefined)
-            }
-        })
-        .catch((error)=>{
-            res.redirect(`/index?query=${val}`)
-        })
+    })
+    .then((response)=>{
+        if (response.data && response.data.example) {
+            // console.log(response.data)
+            res.send(response.data.example);
+        } else {
+            res.send(["Sorry, no example sentences found in this section."])
+        }
+    })
+    .catch((error)=>{
+        res.send(["Sorry, no example sentences found in this section."])
+    })
+});
+
+router.get("/literatureSearching", (req, res) => {
+    let value = req.query.searchQuery;
+    axios.get(
+        `https://api.wordnik.com/v4/word.json/${value}/examples?includeDuplicates=false&useCanonical=false&limit=50&api_key=${process.env.WORDNIK}`
+    )
+    .then((response)=>{
+        if (response.data && response.data.examples) {
+            res.send(response.data.examples);
+            // console.log(response.data.examples)
+        } else {
+            res.send(["Sorry, no example sentences found in this section."])
+        }
+    })
+    .catch((error)=>{
+        res.send(["Sorry, no example sentences found in this section."])
+    })
 });
 
 // Sign up

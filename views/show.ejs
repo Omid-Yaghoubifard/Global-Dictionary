@@ -25,6 +25,8 @@ if not logged in we should invite the user to log in. -->
                                     <strong>verb</strong> /<%= wordsApi.pronunciation.verb %>/
                                 <% } else if (wordsApi.pronunciation.all){ %>
                                     /<%= wordsApi.pronunciation.all %>/
+                                <% } if (wordsApi.pronunciation.adjective){ %>
+                                    <strong>adjective</strong> /<%= wordsApi.pronunciation.adjective %>/
                                 <% } else if (wordsApi.pronunciation && wordsApi.pronunciation.length){ %>
                                     /<%= wordsApi.pronunciation %>/
                                 <% } %>
@@ -37,9 +39,9 @@ if not logged in we should invite the user to log in. -->
                                 </button>
                             <% } %>
                     </h3>
-                    <hr>
                     <div class="card-text">
                         <% if (wordsApi.results){ %>
+                            <hr>
                             <% wordsApi.results.forEach((def, i) => { %>
                                 <div class="mb-4">
                                     <h6 class="text-success">
@@ -53,10 +55,20 @@ if not logged in we should invite the user to log in. -->
                                     </h6>
                                     <% if (def.examples){ %>
                                         <% for(let example of def.examples){ %>
-                                            <% let casedExample = example.charAt(0).toUpperCase() + example.slice(1); %>
+                                            <% let casedExample; %>
                                             <% let dot; %>
-                                            <% if ((casedExample.indexOf(".") === -1) && (casedExample.indexOf("!") === -1) && (casedExample.indexOf("?") === -1)){ %>
+                                            <% if ((!example.includes(".")) && (!example.includes("!")) && (!example.includes("?")) && (example.length > 25)){ %>
+                                                <% casedExample = example.charAt(0).toUpperCase() + example.slice(1); %>
                                                 <% dot = "." %>
+                                            <% } else if ((example[0] !== example[0].toLowerCase()) && (!example.includes(".")) && (!example.includes("?")) && (!example.includes("!"))) { %>
+                                                <% casedExample = example %>
+                                                <% dot = "." %>
+                                            <% } else { %>
+                                                <% if ((example.includes(".")) || (example.includes("?")) || (example.includes("!"))){ %>
+                                                    <% casedExample = example.charAt(0).toUpperCase() + example.slice(1); %>
+                                                <% } else{ %>
+                                                    <% casedExample = example %>
+                                                <% } %>
                                             <% } %>
                                             <% if (dot){ %>
                                                 <p><strong>e.g.</strong> <%= casedExample + dot %> </p>
@@ -91,11 +103,14 @@ if not logged in we should invite the user to log in. -->
                             <% }) %>
                         <% }%>
                     </div>
-                    <hr>
-                    <div>
-                        <button type="submit" value=" <%= wordsApi.word %> " class="btn btn-primary" id="ExampleRequest">More Examples</button>
-                        <div id="moreExamples"></div>
-                    </div>
+                    <% if (wordsApi.frequency){ %>
+                        <hr>
+                        <div>
+                            <button type="submit" value="<%= wordsApi.word %>" class="btn btn-primary mr-1" id="exampleRequest">More Examples</button>
+                            <button type="submit" value="<%= wordsApi.word %>" class="btn btn-primary" id="literatureRequest"><%= wordsApi.word[0].toUpperCase() + wordsApi.word.substring(1) %> in Context</button>
+                        </div>
+                        <div class="mt-3" id="moreExamples"></div>
+                    <% } %>
                 </div>
             </div>
             <% if (unsplash){ %>
