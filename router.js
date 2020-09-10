@@ -20,21 +20,45 @@ router.get("/", (req,res) => {
 })
 
 // show
-router.get("/index", (req,res) => {
+router.get("/index", async (req,res) => {
     let query = req.query.query.trim().toLowerCase();
     let path = req.route.path;
     let wordsApi;
     let wordPronunciation;
     let unsplash;
-    axios.get(
+
+    await axios.get(
         `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${query}--_us_1.mp3`
     )
     .then((resolved)=>{
         wordPronunciation = `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${query}--_us_1.mp3`;
     })
-    .catch((err)=>{
-        wordPronunciation = undefined;
+    .catch(async (err)=>{
+        await axios({
+            "method":"GET",
+            "url": `https://lingua-robot.p.rapidapi.com/language/v1/entries/en/${query}`,
+            "headers":{
+            "content-type":"application/octet-stream",
+            "x-rapidapi-host":"lingua-robot.p.rapidapi.com",
+            "x-rapidapi-key": process.env.RAPIDAPI,
+            "useQueryString":true
+            }
+        })
+        .then((resolve)=>{
+            if(resolve.data && resolve.data.entries && resolve.data.entries[0] && resolve.data.entries[0].pronunciations && resolve.data.entries[0].pronunciations[0] && resolve.data.entries[0].pronunciations[0].audio){
+                const bestPronunciation = resolve.data.entries[0].pronunciations;
+                if (bestPronunciation[bestPronunciation.length -1].audio.url) {
+                    wordPronunciation = bestPronunciation[bestPronunciation.length -1].audio.url;
+                } else{
+                    wordPronunciation = bestPronunciation[0].audio.url;
+                }
+            }
+        })
+        .catch((err)=>{
+            wordPronunciation = undefined;
+        })
     })
+
     axios.all([
         axios({
             "method":"GET",
@@ -46,33 +70,20 @@ router.get("/index", (req,res) => {
             "useQueryString": true
             }
         }),
-        axios({
-            "method":"GET",
-            "url": `https://lingua-robot.p.rapidapi.com/language/v1/entries/en/${query}`,
-            "headers":{
-            "content-type":"application/octet-stream",
-            "x-rapidapi-host":"lingua-robot.p.rapidapi.com",
-            "x-rapidapi-key": process.env.RAPIDAPI,
-            "useQueryString":true
-            }
-        }),
         axios.get(
           `https://api.unsplash.com/search/photos/?page=1&per_page=1&query=${query}&client_id=${process.env.UNSPLASHACCESSKEY}`
         )
     ])
     .then((responses)=>{
+        // console.log(wordPronunciation);
         if (responses[0].data){
             wordsApi = responses[0].data;
         }
         // console.log(wordsApi);
-        if(!wordPronunciation && responses[1].data && responses[1].data.entries && responses[1].data.entries[0] && responses[1].data.entries[0].pronunciations && responses[1].data.entries[0].pronunciations[0] && responses[1].data.entries[0].pronunciations[0].audio){
-            wordPronunciation = responses[1].data.entries[0].pronunciations[0].audio.url;
+        if(wordsApi.frequency && responses[1].data.results[0] && responses[1].data.results[0].urls.small){
+            unsplash = responses[1].data.results[0].urls.small;
         }
-        // console.log(wordPronunciation);
-        if(wordsApi.frequency && responses[2].data.results[0] && responses[2].data.results[0].urls.small){
-            unsplash = responses[2].data.results[0].urls.small;
-        }
-        // console.log(responses[2].data);
+        // console.log(responses[1].data);
         res.render("show",{
             currentYear,
             path,
@@ -83,7 +94,7 @@ router.get("/index", (req,res) => {
         })
     })
     .catch((error)=>{
-        req.flash("noResult", "Please make sure you have typed the word correctly.");
+        req.flash("noResult", `The word "${query}" was not found. Please make sure you have typed your search inquiry correctly and try again.`);
         // console.log(error);
         res.redirect("/")
     })
@@ -109,11 +120,11 @@ router.get("/exampleSearching", (req, res) => {
             // console.log(response.data)
             res.send(response.data.example);
         } else {
-            res.send(["Sorry, no example sentences found in this section."])
+            res.send(["Sorry, no more data is available in this section."])
         }
     })
     .catch((error)=>{
-        res.send(["Sorry, no example sentences found in this section."])
+        res.send(["Sorry, no more data is available in this section."])
     })
 });
 
@@ -127,11 +138,11 @@ router.get("/literatureSearching", (req, res) => {
             res.send(response.data.examples);
             // console.log(response.data.examples)
         } else {
-            res.send(["Sorry, no example sentences found in this section."])
+            res.send(["Sorry, no more data is available in this section."])
         }
     })
     .catch((error)=>{
-        res.send(["Sorry, no example sentences found in this section."])
+        res.send(["Sorry, no more data is available in this section."])
     })
 });
 

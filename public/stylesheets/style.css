@@ -31,6 +31,10 @@ body {
     font-size: 1.25rem;
 }
 
+.buttonIcon {
+    font-size: 0.8rem;
+}
+
 .speaker {
     border: none;
     background-color: white;
@@ -39,6 +43,10 @@ body {
 
 .speaker:focus{
     outline: none;
+}
+
+.toToggle{
+    display: none;
 }
 
 /* To overwrite Bootstrap's default border-right issue. => */
