@@ -1,7 +1,27 @@
 <%- include("partials/header") %>
 
-
-
-
+<div class="container pt-5 pb-5 mt-5">
+    <div class="row">
+      <div class="col-sm-10 col-md-8 col-lg-6 col-xl-5 m-auto">
+        <h4 class="mb-3 text-dark pb-1 open-sans-font">Sign Up Now!</h4>
+        <form method="POST" action="/signup">
+          <div class="form-group">
+            <input type="email" name="email" class="form-control" aria-describedby="emailHelp" placeholder="Enter your email" required> 
+          </div>
+          <div class="form-group">
+            <input type="text" name="username" class="form-control" placeholder="Choose a username" minlength="3" maxlength="30" required>
+          </div>
+          <div class="form-group">
+            <input type="password" name="password" class="form-control" placeholder="Enter your password" minlength="8" maxlength="256" required>
+          </div>
+          <div class="form-group">
+            <input type="password" name="password2" class="form-control" placeholder="Confirm your password" minlength="8" maxlength="256" required>
+          </div>
+          <button type="submit" class="btn btn-primary btn-block">SIGN UP</button>
+          <p class="mt-3 text-dark open-sans-font">Have an account? <a href="/login">Log in!</a></p>
+        </form>
+      </div>
+    </div>
+</div>
 
 <%- include("partials/footer") %>

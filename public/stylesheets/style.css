@@ -49,6 +49,11 @@ body {
     display: none;
 }
 
+.word-photo {
+    box-shadow: 10px -2px 20px 2px rgba(0,0,0,.3);
+    border-radius: 6px;
+}
+
 /* To overwrite Bootstrap's default border-right issue. => */
 
 input-group>.custom-select:not(:last-child), .input-group>.form-control:not(:last-child) {

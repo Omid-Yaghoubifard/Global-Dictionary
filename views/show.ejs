@@ -157,13 +157,24 @@ if not logged in we should invite the user to log in. -->
                     <% } %>
                 </div>
             </div>
-            <% if (unsplash){ %>
-                <div class="col-md-4 mt-md-5 mb-5">
+            <div class="col-md-4 mt-md-5 mb-5">
+                <% if (unsplash){ %>
                     <div class="card">
-                        <img class="card-img-top" src="<%= unsplash %>" alt="">
+                        <img class="card-img-top word-photo" src="<%= unsplash %>" alt="">
+                    </div>
+                <% } %>
+                <% if (searchHistory){ %>
+                <div>
+                    <p class="h5 mt-5 text-success">Your Search History</p>
+                    <% for(let item of searchHistory){ %>
+                        <a class="h6 mr-2" href="/index?query=<%= item.word %>"> <%= item.word %> </a>
+                    <% } %>
+                    <div>
+                        <p><a class="btn btn-outline-primary mt-3" href="#"><strong>See More!</strong></a></p>
                     </div>
                 </div>
-            <% } %>
+                <% } %>
+            </div>
         </div>
     <% } %>
 </div>

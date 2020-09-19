@@ -47,7 +47,7 @@ $(".literatureRequest").on("click", function() {
     } else{
         $(this).find("i").toggleClass("fa-minus").toggleClass("fa-plus");
         $(this).toggleClass("btn-primary").toggleClass("btn-outline-primary");
-        $(this).next("#literature").slideToggle(1200);
+        $(this).next("#literature").slideToggle(900);
     }
 });
 

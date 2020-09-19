@@ -26,6 +26,7 @@ router.get("/index", async (req,res) => {
     let wordsApi;
     let wordPronunciation;
     let unsplash;
+    let searchHistory;
 
     await axios.get(
         `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${query}--_us_1.mp3`
@@ -84,14 +85,52 @@ router.get("/index", async (req,res) => {
             unsplash = responses[1].data.results[0].urls.small;
         }
         // console.log(responses[1].data);
-        res.render("show",{
-            currentYear,
-            path,
-            wordsApi,
-            wordPronunciation,
-            unsplash,
-            user: req.user
-        })
+        function renderShow(){
+            res.render("show",{
+                currentYear,
+                path,
+                wordsApi,
+                wordPronunciation,
+                unsplash,
+                searchHistory,
+                user: req.user
+            })
+        }
+        if (req.user && wordsApi && wordsApi.results) {
+            const filteredArr = wordsApi.results.reduce((acc, current) => {
+                const x = acc.find(item => (item === current.partOfSpeech));
+                if (!x) {
+                return acc.concat([current.partOfSpeech]);
+                } else {
+                return acc;
+                }
+            }, []);
+            const newWord = {
+                word: wordsApi.word,
+                definition: wordsApi.results[0].definition,
+                wordType: filteredArr,
+                time: new Date()
+            }
+            // console.log (req.user._id);
+            // CB is necessary to make $push in the following method work.
+            User.findByIdAndUpdate(req.user._id,
+                {$push: {queries: newWord} }, (err, success) => {
+                    if (err) {
+                        console.log(err);
+                    } 
+                })
+            User.findById(req.user._id).exec((err, userData) => {
+                let temp = userData.queries;
+                if (temp.length < 51) {
+                    searchHistory = temp.reverse();
+                } else{
+                    searchHistory = temp.slice(temp.length - 50).reverse();
+                }
+                renderShow()
+            });
+        } else{
+            renderShow()
+        }
     })
     .catch((error)=>{
         req.flash("noResult", `The word "${query}" was not found. Please make sure you have typed your search inquiry correctly and try again.`);
