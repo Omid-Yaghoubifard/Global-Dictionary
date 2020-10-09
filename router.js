@@ -21,12 +21,38 @@ router.get("/", (req,res) => {
 
 // show
 router.get("/index", async (req,res) => {
-    let query = req.query.query.trim().toLowerCase();
+    let query = "index";
     let path = req.route.path;
     let wordsApi;
     let wordPronunciation;
     let unsplash;
     let searchHistory;
+    if(req.query.query){
+        query = req.query.query.trim().toLowerCase();
+    }
+    function renderShow(){
+        res.render("show",{
+            currentYear,
+            path,
+            wordsApi,
+            wordPronunciation,
+            unsplash,
+            searchHistory,
+            user: req.user
+        })
+    }
+
+    axios.get(
+        `https://api.unsplash.com/search/photos/?page=1&per_page=1&query=${query}&client_id=${process.env.UNSPLASHACCESSKEY}`
+    )
+    .then((resolved)=>{
+        if (resolved.data.results[0] && resolved.data.results[0].urls.small) {
+            unsplash = resolved.data.results[0].urls.small;
+        }
+    })
+    .catch((err)=>{
+        unsplash = undefined;
+    })
 
     await axios.get(
         `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${query}--_us_1.mp3`
@@ -60,42 +86,26 @@ router.get("/index", async (req,res) => {
         })
     })
 
-    axios.all([
-        axios({
-            "method":"GET",
-            "url": `https://wordsapiv1.p.rapidapi.com/words/${query}`,
-            "headers":{
-            "content-type": "application/octet-stream",
-            "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
-            "x-rapidapi-key": process.env.RAPIDAPI,
-            "useQueryString": true
-            }
-        }),
-        axios.get(
-          `https://api.unsplash.com/search/photos/?page=1&per_page=1&query=${query}&client_id=${process.env.UNSPLASHACCESSKEY}`
-        )
-    ])
-    .then((responses)=>{
+    axios({
+        "method":"GET",
+        "url": `https://wordsapiv1.p.rapidapi.com/words/${query}`,
+        "headers":{
+        "content-type": "application/octet-stream",
+        "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+        "x-rapidapi-key": process.env.RAPIDAPI,
+        "useQueryString": true
+        }
+    })
+    .then((response)=>{
         // console.log(wordPronunciation);
-        if (responses[0].data){
-            wordsApi = responses[0].data;
+        if (response.data){
+            wordsApi = response.data;
         }
         // console.log(wordsApi);
-        if(wordsApi.frequency && responses[1].data.results[0] && responses[1].data.results[0].urls.small){
-            unsplash = responses[1].data.results[0].urls.small;
+        if(!wordsApi.frequency && !wordsApi.word.includes(" ")){
+            unsplash = undefined;
         }
-        // console.log(responses[1].data);
-        function renderShow(){
-            res.render("show",{
-                currentYear,
-                path,
-                wordsApi,
-                wordPronunciation,
-                unsplash,
-                searchHistory,
-                user: req.user
-            })
-        }
+        // console.log(unsplash);
         if (req.user && wordsApi && wordsApi.results) {
             const filteredArr = wordsApi.results.reduce((acc, current) => {
                 const x = acc.find(item => (item === current.partOfSpeech));
@@ -109,7 +119,7 @@ router.get("/index", async (req,res) => {
                 word: wordsApi.word,
                 definition: wordsApi.results[0].definition,
                 wordType: filteredArr,
-                time: new Date()
+                pronunciation: wordPronunciation
             }
             // console.log (req.user._id);
             // CB is necessary to make $push in the following method work.
@@ -118,7 +128,8 @@ router.get("/index", async (req,res) => {
                     if (err) {
                         console.log(err);
                     } 
-                })
+                }
+            )
             User.findById(req.user._id).exec((err, userData) => {
                 let temp = userData.queries;
                 if (temp.length < 51) {
@@ -268,27 +279,34 @@ router.get("/logout", isLoggedIn, (req, res) => {
     res.redirect("/");
 });
 
-
 // profile
 router.get("/profile", isLoggedIn, (req,res) => {
     let path = req.route.path;
-    res.render("profile", {
-        currentYear,
-        path,
-        user: req.user
+    User.findById(req.user._id).exec((err, userData) => {
+        let temp = userData.queries;
+        let searchHistory = temp.reverse();
+        let results = userData.testResults;
+        let testResults = results.reverse();
+        res.render("profile", {
+            currentYear,
+            path,
+            searchHistory,
+            testResults,
+            user: req.user
+        })
     })
 });
 
-// Change password
-router.get("/profile/edit", isLoggedIn, (req,res) => {
-    let path = req.route.path;
-    res.render("profileEdit", {
-        currentYear,
-        path,
-        user: req.user,
-        messages: [req.flash("passwordMatch"), req.flash("passwordChangeError")]
-    });
-});
+// // Change password
+// router.get("/profile/edit", isLoggedIn, (req,res) => {
+//     let path = req.route.path;
+//     res.render("profileEdit", {
+//         currentYear,
+//         path,
+//         user: req.user,
+//         messages: [req.flash("passwordMatch"), req.flash("passwordChangeError")]
+//     });
+// });
 
 
 router.post("/profile", isLoggedIn, 
@@ -301,7 +319,7 @@ router.post("/profile", isLoggedIn,
     (req, res) => {
         if(req.body.password !== req.body.password2) {
             req.flash("passwordMatch", "Please make sure you enter the same password twice.");
-            res.redirect("/profile/edit");
+            res.redirect("/profile");
         } else {
             User.findOne({username: req.user.username}).then(user => {
                 if (user){
@@ -312,22 +330,77 @@ router.post("/profile", isLoggedIn,
                     });
                 } else {
                     req.flash("passwordChangeError", "There was an error. Please try again");
-                    res.redirect("/profile/edit");
+                    res.redirect("/profile");
                 }
             })
         }
     }
 );
 
-
-// Test your knowledge on what you have searched for!
-router.get("/test", (req,res) => {
+router.get("/test", isLoggedIn, (req,res) => {
+    let nOfQuestions = req.query.numOfQues;
     let path = req.route.path;
-    res.render("test", {
-        currentYear,
-        path,
-        user: req.user
+    User.findById(req.user._id).exec((err, userData) => {
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+        let temp = userData.queries.reverse().slice(0, 500);
+        let searchHistory = temp.reduce((acc, current) => {
+            const x = acc.find(item => (!current.definition || item.definition === current.definition));
+            if (!x) {
+            return acc.concat([current]);
+            } else {
+            return acc;
+            }
+        }, []);
+        if (searchHistory < 75) {
+            res.send(["Not enough data to create a test."]);
+        }
+        shuffleArray(searchHistory);
+        let sentences = searchHistory.slice(0, nOfQuestions);
+        let choices = searchHistory.slice(nOfQuestions);
+        let fullQuestions = [];
+        sentences.forEach(element => {
+            let randNum = Math.floor(Math.random() * choices.length)
+            randNum / choices.length < 0.5 ? randNum++ : randNum--;
+            let fourChoices = [
+                [element.word, true],
+                [choices[randNum].word],
+                [choices[randNum + 1].word],
+                [choices[randNum - 1].word]
+            ]
+            shuffleArray(fourChoices);
+            fullQuestions.push({
+                definition: element.definition,
+                fourChoices
+            })
+        });
+        // console.log(fullQuestions);
+        res.send(fullQuestions)
     })
+})
+
+router.get("/testResult", isLoggedIn, (req,res) => {
+    let testResult = {
+        trueAnswers: req.query.trueAnswers,
+        numOfQuestions: req.query.numOfQuestions,
+        percentage: req.query.percentage,
+        grade: req.query.grade,
+        time: new Date().toDateString()
+    }
+    // console.log(testResult);
+    User.findByIdAndUpdate(req.user._id,
+        {$push: {testResults: testResult} }, (err, success) => {
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(testResult);
+            }
+        }
+    )
 })
 
 // 404

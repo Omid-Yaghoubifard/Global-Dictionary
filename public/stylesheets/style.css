@@ -37,7 +37,6 @@ body {
 
 .speaker {
     border: none;
-    background-color: white;
     font-size: 1.1rem;
 }
 
@@ -49,9 +48,38 @@ body {
     display: none;
 }
 
-.word-photo {
+.shadow-effect {
     box-shadow: 10px -2px 20px 2px rgba(0,0,0,.3);
     border-radius: 6px;
+}
+
+.main-background {
+    background-color: #ecf0f1;
+    padding: 14px;
+}
+
+.asterisk {
+    vertical-align: sub;
+}
+
+.displayCenter {
+    display: block;
+}
+
+.disInline{
+    display: inline;
+}
+
+#v-pills-searched p:nth-child(n+51) {
+    display:none;
+}
+
+@media (min-width: 450px) and (max-width: 575px){
+    .profile-title {
+        width: 370px;
+        margin-left: auto;
+        margin-right: auto;
+    }
 }
 
 /* To overwrite Bootstrap's default border-right issue. => */

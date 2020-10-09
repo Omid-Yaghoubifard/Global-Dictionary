@@ -10,9 +10,8 @@ if not logged in we should invite the user to log in. -->
 <div class="container mt-5 pt-5">
     <% if (wordsApi){ %>
         <div class="row">
-            <div class="col-md-8 card border-light">
-                <div class="card-body text-secondary">
-                    <h3 class="card-title mb-3">
+            <div class="col-md-7 shadow-effect p-4 mt-md-4 mb-5 main-background mx-3 mx-md-0">
+                    <h3 class="mb-3">
                         <% if (wordsApi.frequency && wordsApi.frequency > 3.5){ %>
                             <i class="fas fa-key key"></i> 
                         <% } %>
@@ -64,18 +63,16 @@ if not logged in we should invite the user to log in. -->
                                 <% } %> 
                             <% } %>
                     </h3>
-                    <div class="card-text">
+                    <div class="">
                         <% if (wordsApi.results){ %>
                             <hr>
                             <% wordsApi.results.forEach((def, i) => { %>
                                 <div class="mb-5">
                                     <h6 class="text-success">
-                                        <% if (wordsApi.results.length > 1){ %>
-                                            <%= i+1 %>. 
-                                        <% } %>
                                         <% if(def.partOfSpeech){ %>
-                                            (<%= def.partOfSpeech %>) 
+                                            <span class="badge badge-info"><%= def.partOfSpeech %></span>
                                         <% } %>
+                                        &nbsp;
                                         <%= def.definition %>
                                     </h6>
                                     <% if (def.examples){ %>
@@ -96,9 +93,9 @@ if not logged in we should invite the user to log in. -->
                                                 <% } %>
                                             <% } %>
                                             <% if (dot){ %>
-                                                <p class="mt-3 mb-1"><strong><i class="fas fa-angle-right"></i></strong> <%= casedExample + dot %> </p>
+                                                <p class="mt-3 mb-1 text-primary"><strong><i class="fas fa-angle-right"></i></strong> <%= casedExample + dot %> </p>
                                             <% } else{ %>
-                                                <p class="mt-3 mb-1"><strong><i class="fas fa-angle-right"></i></strong> <%= casedExample %> </p>
+                                                <p class="mt-3 mb-1 text-primary"><strong><i class="fas fa-angle-right"></i></strong> <%= casedExample %> </p>
                                             <% } %>
                                         <% } %>
                                     <% } %>
@@ -107,7 +104,7 @@ if not logged in we should invite the user to log in. -->
                                     <% } %>
                                     <div class="toToggle mt-2">
                                         <% if (def.synonyms){ %>
-                                            <p><strong>Synonyms</strong>&nbsp;
+                                            <p><span class="badge badge-primary">syn</span> &nbsp;
                                             <% for(let [idx, synonym] of def.synonyms.entries()){ %>
                                                 <% if (idx < def.synonyms.length-1){ %>
                                                     <a href="/index?query=<%= synonym %>"><%= synonym %></a>, 
@@ -118,7 +115,7 @@ if not logged in we should invite the user to log in. -->
                                             </p>
                                         <% } %>
                                         <% if (def.antonyms){ %>
-                                            <p><strong>Antonyms</strong>&nbsp;
+                                            <p><span class="badge badge-primary">anti</span> &nbsp;
                                             <% for(let [idx, antonym] of def.antonyms.entries()){ %>
                                                 <% if (idx < def.antonyms.length-1){ %>
                                                     <a href="/index?query=<%= antonym %>"><%= antonym %></a>, 
@@ -129,7 +126,7 @@ if not logged in we should invite the user to log in. -->
                                             </p>
                                         <% } %>
                                         <% if (def.hasTypes){ %>
-                                            <p><strong>Related Words:</strong>&nbsp;
+                                            <p><span class="badge badge-primary">related</span> &nbsp;
                                             <% for(let [idx, type] of def.hasTypes.entries()){ %>
                                                 <% if (idx < def.hasTypes.length-1){ %>
                                                     <a href="/index?query=<%= type %>"><%= type %></a>, 
@@ -147,30 +144,30 @@ if not logged in we should invite the user to log in. -->
                     <% if (wordsApi.frequency){ %>
                         <hr class="mb-4">
                         <div>
-                            <button type="submit" value="<%= wordsApi.word %>" class="btn btn-outline-primary exampleRequest"><i class="fas fa-plus buttonIcon"></i> <strong>More Examples</strong></button>
-                            <div class="mt-3" id="moreExamples"></div>
+                            <button type="submit" value="<%= wordsApi.word %>" class="btn btn-outline-primary exampleRequest"><i class="fas fa-plus buttonIcon"></i> <strong><span id="showMore">More</span> Examples</strong></button>
+                            <div class="mt-3 text-primary" id="moreExamples"></div>
                         </div>
                         <div class="mt-4 mb-4">
                             <button type="submit" value="<%= wordsApi.word %>" class="btn btn-outline-primary literatureRequest"><i class="fas fa-plus buttonIcon"></i> <strong><%= wordsApi.word[0].toUpperCase() + wordsApi.word.substring(1) %> in Context</strong></button>
-                            <div class="mt-3" id="literature"></div>
+                            <div class="mt-3 text-primary" id="literature"></div>
                         </div>
                     <% } %>
-                </div>
             </div>
-            <div class="col-md-4 mt-md-5 mb-5">
+            <div class="col-md-1"></div>
+            <div class="col-md-4 mt-md-4 mb-5">
                 <% if (unsplash){ %>
-                    <div class="card">
-                        <img class="card-img-top word-photo" src="<%= unsplash %>" alt="">
+                    <div class="card mb-5">
+                        <img class="card-img-top shadow-effect" src="<%= unsplash %>" alt="">
                     </div>
                 <% } %>
-                <% if (searchHistory){ %>
-                <div>
-                    <p class="h5 mt-5 text-success">Your Search History</p>
+                <% if (searchHistory && searchHistory.length){ %>
+                <div class="shadow-effect main-background p-3">
+                    <p class="h5 text-success">Your Search History</p>
                     <% for(let item of searchHistory){ %>
-                        <a class="h6 mr-2" href="/index?query=<%= item.word %>"> <%= item.word %> </a>
+                        <a class="h6 mr-2" href="/index?query=<%= item.word %>"><%= item.word %></a>
                     <% } %>
                     <div>
-                        <p><a class="btn btn-outline-primary mt-3" href="#"><strong>See More!</strong></a></p>
+                        <p><a class="btn btn-outline-primary mt-3" href="/profile#v-pills-searched"><strong>See More!</strong></a></p>
                     </div>
                 </div>
                 <% } %>

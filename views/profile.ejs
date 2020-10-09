@@ -1,7 +1,142 @@
 <%- include("partials/header") %>
 
-
-
-
+<div class="container mt-4 pt-5">
+    <div class="row ml-1">
+        <div class="col-md-4 col-lg-3 mt-5">
+          <div class="nav navbar-dark flex-column nav-pills shadow-effect myNav" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+            <a class="nav-link profileNav active" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true"><strong>Profile <i class="fas fa-angle-double-right"></i></strong></a>
+            <a class="nav-link profileNav" id="v-pills-searched-tab" data-toggle="pill" href="#v-pills-searched" role="tab" aria-controls="v-pills-searched" aria-selected="false"><strong>Search History <i class="fas fa-angle-right"></i></strong></a>
+            <a class="nav-link profileNav" id="v-pills-test-tab" data-toggle="pill" href="#v-pills-test" role="tab" aria-controls="v-pills-test" aria-selected="false"><strong>Vocabulary Test <i class="fas fa-angle-right"></i></strong></a>
+            <a class="nav-link profileNav" id="v-pills-test-result-tab" data-toggle="pill" href="#v-pills-test-result" role="tab" aria-controls="v-pills-test-result" aria-selected="false"><strong>Test Results <i class="fas fa-angle-right"></i></strong></a>
+        </div>
+        </div>
+        <div class="col-md-8 col-lg-9 mt-5">
+            <div class="tab-content" id="v-pills-tabContent">
+                <div class="tab-pane fade shadow-effect show active main-background" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                    <div class="mb-2 p-1 pl-2 profile-title">
+                        <h6>Username: <a href="/profile"> <%= user.username %> </a> </h6>
+                        <h6>Email: <a href="/profile"> <%= user.email %> </a> </h6>
+                        <h6> Password: <span class="asterisk">**********</span></h6>
+                        <button class="btn btn-primary passwordChange" href="profile/edit">Change Your Password</button>
+                        <div class="toToggle mt-5">    
+                            <form method="POST" action="/profile">
+                                <div class="form-group">
+                                    <input type="password" name="password" class="form-control" placeholder="Enter your new password" minlength="8" maxlength="256" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="password" name="password2" class="form-control" placeholder="Confirm your new password" minlength="8" maxlength="256" required>
+                                </div>
+                                <button type="submit" class="btn btn-primary btn-block">Submit</button>
+                            </form>
+                            <button href="/profile" class="btn btn-secondary btn-block mt-2 cancelChange">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="tab-pane shadow-effect fade mb-5 py-3 main-background" id="v-pills-searched" role="tabpanel" aria-labelledby="v-pills-searched-tab">
+                    <% if(searchHistory && searchHistory.length){ %>
+                        <% searchHistory.forEach(item =>{ %>
+                            <p class="px-1 pt-2">
+                                <a href="/index?query=<%= item.word %>"><strong class="text-secondary"><%= item.word %></strong></a>
+                                <% if (item.pronunciation){ %>
+                                    <audio id="<%= item.pronunciation %>" src="<%= item.pronunciation %>">pronunciation</audio>
+                                    <button onclick="document.getElementById('<%= item.pronunciation %>').play()" class="speaker">
+                                        <i class="fas fa-volume-up text-secondary"></i>
+                                    </button>
+                                <% } %>
+                                <% if (item.wordType){ %>
+                                    <% item.wordType.forEach(item =>{ %>
+                                        <span class="badge badge-primary ml-1"><%= item %></span>
+                                    <% }) %>
+                                <% } %>
+                                <span class="ml-2 text-primary"><%= item.definition %></span>
+                            </p>
+                        <% }) %>
+                    <% }else { %>
+                        <p class="h6 px-2 text-primary"><i class="fas fa-angle-right"></i> Just start using the dictionary and we will keep your search history here.</p>
+                    <% } %>
+                    <% if(searchHistory && searchHistory.length > 50){ %>
+                        <div class="text-center mt-4 mb-2">
+                            <button class="btn btn-outline-primary btnLoader">Show more words</button>
+                        </div>
+                    <% } %>
+                </div>
+                <div class="tab-pane fade text-secondary shadow-effect main-background testDiv mb-5"  id="v-pills-test" role="tabpanel" aria-labelledby="v-pills-test-tab">
+                    <div class="testStart">
+                        <% if(searchHistory && searchHistory.length > 99 && searchHistory.length < 250){ %>
+                            <p class="h6 px-2 mt-2 text-primary testGuide"><i class="fas fa-angle-right"></i> Please select the number of questions and click on the Start button.</p>
+                            <div class="dropdown mx-2 mt-3 show disInline">
+                                <a class="btn btn-primary dropdown-toggle numOfQuestions" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    20 Questions
+                                </a>                        
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item text-primary">10 Questions</a>
+                                    <a class="dropdown-item text-primary">20 Questions</a>
+                                    <a class="dropdown-item text-primary">30 Questions</a>
+                                </div>
+                            </div>
+                            <button class="btn mx-2 my-2 btn-primary testReq">Take a test!</button>
+                        <% }else if (searchHistory && searchHistory.length > 249){ %>
+                            <p class="h6 px-2 mt-2 text-primary testGuide"><i class="fas fa-angle-right"></i> Please select the number of questions and click on the Start button.</p>
+                            <div class="dropdown mx-2 mt-3 show disInline">
+                                <a class="btn btn-primary dropdown-toggle numOfQuestions" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    20 Questions
+                                </a>                        
+                                <div class="dropdown-menu" aria-labelledby="dropdownMenuLink">
+                                    <a class="dropdown-item text-primary">10 Questions</a>
+                                    <a class="dropdown-item text-primary">20 Questions</a>
+                                    <a class="dropdown-item text-primary">30 Questions</a>
+                                    <a class="dropdown-item text-primary">40 Questions</a>
+                                    <a class="dropdown-item text-primary">50 Questions</a>
+                                </div>
+                            </div>
+                            <button class="btn my-2 btn-primary testReq">Start</button>
+                        <% }else { %>
+                            <p class="h6 px-2 text-primary"><i class="fas fa-angle-right"></i> You need to look up at least 100 unique words or phrases to activate this section.</p>
+                        <% } %>
+                    </div>
+                    <div class="testQuestions"></div>
+                </div>
+                <div class="tab-pane fade text-secondary shadow-effect main-background testDiv mb-5"  id="v-pills-test-result" role="tabpanel" aria-labelledby="v-pills-test-result-tab">
+                    <% if(testResults && testResults.length){ %>
+                            <table class="table table-hover table-striped table-primary mt-3">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Grade</th>
+                                        <th scope="col">Correct Answers</th>
+                                        <th scope="col">Percentage</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="tBody">
+                                    <% testResults.forEach(item =>{ %>
+                                        <tr>
+                                            <th scope="row"><%= testResults.time %></th>
+                                            <td><%= testResults.grade %></td>
+                                            <td><%= testResults.trueAnswers %>/<%= testResults.numOfQuestions %></td>
+                                            <td><%= testResults.percentage %>%</td>
+                                        </tr>
+                                    <% }) %>
+                                </tbody>
+                            </table>
+                    <% }else { %>
+                        <table class="table table-hover table-striped table-primary mt-3 d-none resultTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Grade</th>
+                                    <th scope="col">Correct Answers</th>
+                                    <th scope="col">Percentage</th>
+                                </tr>
+                            </thead>
+                            <tbody class="tBody">
+                            </tbody>
+                        </table>
+                        <p class="h6 px-2 text-primary testResult"><i class="fas fa-angle-right"></i> You have not taken any tests yet.</p>
+                    <% } %>
+                </div>
+            </div>
+        </div>
+      </div>
+</div>
 
 <%- include("partials/footer") %>
