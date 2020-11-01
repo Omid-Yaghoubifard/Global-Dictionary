@@ -7,7 +7,7 @@
             <a class="nav-link profileNav active" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true"><strong>Profile <i class="fas fa-angle-double-right"></i></strong></a>
             <a class="nav-link profileNav" id="v-pills-searched-tab" data-toggle="pill" href="#v-pills-searched" role="tab" aria-controls="v-pills-searched" aria-selected="false"><strong>Search History <i class="fas fa-angle-right"></i></strong></a>
             <a class="nav-link profileNav" id="v-pills-test-tab" data-toggle="pill" href="#v-pills-test" role="tab" aria-controls="v-pills-test" aria-selected="false"><strong>Vocabulary Test <i class="fas fa-angle-right"></i></strong></a>
-            <a class="nav-link profileNav" id="v-pills-test-result-tab" data-toggle="pill" href="#v-pills-test-result" role="tab" aria-controls="v-pills-test-result" aria-selected="false"><strong>Test Results <i class="fas fa-angle-right"></i></strong></a>
+            <a class="nav-link profileNav" id="v-pills-result-tab" data-toggle="pill" href="#v-pills-result" role="tab" aria-controls="v-pills-result" aria-selected="false"><strong>Test Results <i class="fas fa-angle-right"></i></strong></a>
         </div>
         </div>
         <div class="col-md-8 col-lg-9 mt-5">
@@ -17,7 +17,7 @@
                         <h6>Username: <a href="/profile"> <%= user.username %> </a> </h6>
                         <h6>Email: <a href="/profile"> <%= user.email %> </a> </h6>
                         <h6> Password: <span class="asterisk">**********</span></h6>
-                        <button class="btn btn-primary passwordChange" href="profile/edit">Change Your Password</button>
+                        <button class="btn btn-primary passwordChange">Change Your Password</button>
                         <div class="toToggle mt-5">    
                             <form method="POST" action="/profile">
                                 <div class="form-group">
@@ -32,11 +32,19 @@
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane shadow-effect fade mb-5 py-3 main-background" id="v-pills-searched" role="tabpanel" aria-labelledby="v-pills-searched-tab">
+                <div class="tab-pane shadow-effect fade mb-5 py-3 main-background testDiv" id="v-pills-searched" role="tabpanel" aria-labelledby="v-pills-searched-tab">
                     <% if(searchHistory && searchHistory.length){ %>
+                        <p class="h6 px-1 pb-4 text-primary"><i class="fas fa-angle-right"></i> Clicking on an entry will provide you with more details on a separate page and move it to the top.</p>
+                        <p class="h6 px-1 showDef text-primary d-inline">
+                            <strong>Show Definitions 
+                                <i class="fas fa-toggle-on h5 defIcon"></i>
+                            </strong> 
+                        </p>
+                        <hr class="style-one">
+                        <div class="historyItem">
                         <% searchHistory.forEach(item =>{ %>
                             <p class="px-1 pt-2">
-                                <a href="/index?query=<%= item.word %>"><strong class="text-secondary"><%= item.word %></strong></a>
+                                <a href="/index?query=<%= item.word %>" target="_blank" class="historyWord"><strong class="text-secondary"><%= item.word %></strong></a>
                                 <% if (item.pronunciation){ %>
                                     <audio id="<%= item.pronunciation %>" src="<%= item.pronunciation %>">pronunciation</audio>
                                     <button onclick="document.getElementById('<%= item.pronunciation %>').play()" class="speaker">
@@ -48,9 +56,10 @@
                                         <span class="badge badge-primary ml-1"><%= item %></span>
                                     <% }) %>
                                 <% } %>
-                                <span class="ml-2 text-primary"><%= item.definition %></span>
+                                <span class="ml-2 text-primary profile-def"><%= item.definition %></span>
                             </p>
                         <% }) %>
+                        </div>
                     <% }else { %>
                         <p class="h6 px-2 text-primary"><i class="fas fa-angle-right"></i> Just start using the dictionary and we will keep your search history here.</p>
                     <% } %>
@@ -63,7 +72,7 @@
                 <div class="tab-pane fade text-secondary shadow-effect main-background testDiv mb-5"  id="v-pills-test" role="tabpanel" aria-labelledby="v-pills-test-tab">
                     <div class="testStart">
                         <% if(searchHistory && searchHistory.length > 99 && searchHistory.length < 250){ %>
-                            <p class="h6 px-2 mt-2 text-primary testGuide"><i class="fas fa-angle-right"></i> Please select the number of questions and click on the Start button.</p>
+                            <p class="h6 px-2 mt-2 text-primary testGuide"><i class="fas fa-angle-right"></i> Please select the number of questions and click on the Take a test! button.</p>
                             <div class="dropdown mx-2 mt-3 show disInline">
                                 <a class="btn btn-primary dropdown-toggle numOfQuestions" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                                     20 Questions
@@ -96,7 +105,7 @@
                     </div>
                     <div class="testQuestions"></div>
                 </div>
-                <div class="tab-pane fade text-secondary shadow-effect main-background testDiv mb-5"  id="v-pills-test-result" role="tabpanel" aria-labelledby="v-pills-test-result-tab">
+                <div class="tab-pane fade text-secondary shadow-effect main-background testDiv mb-5"  id="v-pills-result" role="tabpanel" aria-labelledby="v-pills-result-tab">
                     <% if(testResults && testResults.length){ %>
                             <table class="table table-hover table-striped table-primary mt-3">
                                 <thead>
@@ -110,10 +119,10 @@
                                 <tbody class="tBody">
                                     <% testResults.forEach(item =>{ %>
                                         <tr>
-                                            <th scope="row"><%= testResults.time %></th>
-                                            <td><%= testResults.grade %></td>
-                                            <td><%= testResults.trueAnswers %>/<%= testResults.numOfQuestions %></td>
-                                            <td><%= testResults.percentage %>%</td>
+                                            <th scope="row"><%= item.time %></th>
+                                            <td><%= item.grade %></td>
+                                            <td><%= item.trueAnswers %>/<%= item.numOfQuestions %></td>
+                                            <td><%= item.percentage %>%</td>
                                         </tr>
                                     <% }) %>
                                 </tbody>

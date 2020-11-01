@@ -53,6 +53,19 @@ $(".literatureRequest").on("click", function() {
     }
 });
 
+$(".showDef").on("click", function() {
+    $(this).toggleClass("text-primary").toggleClass("text-muted");
+    $(this).find("i").toggleClass("fa-toggle-on").toggleClass("fa-toggle-off");
+    $(".profile-def").each(function(){
+        $(this).slideToggle(1);
+    });
+})
+
+$(".historyWord").on("click", function() {
+    $(".historyItem").prepend(`<p class="px-1 pt-2">${$(this).parent()[0].innerHTML}</p>`);
+    $(".historyWord").first().addClass("newlyAddedWord")
+})
+
 let numOfQuestions;
 $(".testReq").on("click", function() {
     numOfQuestions = $(".numOfQuestions").html().slice(0,2);
@@ -64,10 +77,10 @@ $(".testReq").on("click", function() {
         // $(".testDiv").html("");
         $(".testStart").hide();
         if (data.length < 2) {
-            $(".testQuestions").append(data[0]);
+            $(".testQuestions").append(`<p class="h6 px-2 text-primary"><i class="fas fa-angle-right"></i> ${data[0]}</p>`);
         } else{
             $(".testQuestions").append("<h6 class=' px-2 my-2 text-primary'><i class='fas fa-angle-right'></i> Select the word that most closely matches each definition and submit the test.</h6>")
-            $(".testQuestions").append("<hr class='mt-5'>")
+            $(".testQuestions").append("<hr class='mt-5 style-one'>")
             data.forEach(function(item, i){
                 $(`<div id=${i} class= "singleQ"/>`).appendTo("div.testQuestions");
                 $(`#${i}`).append(`<p class="mt-4 mb-3"><strong><i class="fas rightOrWrong mr-2"></i> ${i+1}. ${item.definition}</strong></p>`);
@@ -79,13 +92,14 @@ $(".testReq").on("click", function() {
                     }
                 }
             })
-            $(".testQuestions").append("<hr class='mt-4 mb-4'>")
+            $(".testQuestions").append("<hr class='mt-4 mb-4 style-one'>")
             $(".testQuestions").append("<button class= 'btn ml-4 mb-3 btn-outline-secondary submitButton'>Submit</button>")
             $(".testQuestions").append("<button class= 'btn btn-outline-secondary ml-3 mb-3 startOver'>Start Over!</button>")
             $(".testQuestions").append("<h5 class= 'text-primary ml-4 mt-3 mb-5' id= 'mark'></h5>")
         }
     })
 });
+
 $(".toggle-btn").click(function(){
     $(this).find("i").toggleClass("fa-minus").toggleClass("fa-plus");
     $(this).toggleClass("btn-primary").toggleClass("btn-outline-primary");
@@ -113,12 +127,13 @@ $(() => {
         $("#v-pills-searched p:hidden").slice(0, 10).show();
         if ($("#v-pills-searched p").length === $("#v-pills-searched p:visible").length) {
             $("button.btnLoader").removeClass("btn-outline-primary").addClass("btn-primary").addClass("disabled");
-            $("button.btnLoader").html("No more results");
+            $("button.btnLoader").html("End of results");
         }
     });
 });
 
 let url = document.location.toString();
+
 if (url.match("/profile#v-pills-searched")) {
     $('.myNav a[href="#' + url.split('#')[1] + '"]').tab("show");
     $("#v-pills-profile-tab").removeClass("active").find("i").removeClass("fa-angle-double-right").addClass("fa-angle-right");
@@ -130,15 +145,74 @@ if (url.match("/profile#v-pills-searched")) {
     }
 }
 
+if (url.match("/profile#v-pills-test")) {
+    $('.myNav a[href="#' + url.split('#')[1] + '"]').tab("show");
+    $("#v-pills-profile-tab").removeClass("active").find("i").removeClass("fa-angle-double-right").addClass("fa-angle-right");
+    $("#v-pills-profile").removeClass("active").removeClass("show");
+    $("#v-pills-test-tab").addClass("active").find("i").removeClass("fa-angle-right").addClass("fa-angle-double-right");
+    $("#v-pills-test").addClass("show").addClass("active");
+    if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+    }
+}
+
+if (url.match("/profile#v-pills-result")) {
+    $('.myNav a[href="#' + url.split('#')[1] + '"]').tab("show");
+    $("#v-pills-profile-tab").removeClass("active").find("i").removeClass("fa-angle-double-right").addClass("fa-angle-right");
+    $("#v-pills-profile").removeClass("active").removeClass("show");
+    $("#v-pills-result-tab").addClass("active").find("i").removeClass("fa-angle-right").addClass("fa-angle-double-right");
+    $("#v-pills-result").addClass("show").addClass("active");
+    if ("scrollRestoration" in history) {
+        history.scrollRestoration = "manual";
+    }
+}
+
 $(".dropdown-menu a").click(function(){
     $(this).parents(".dropdown").find(".btn").html($(this).text());
     $(this).parents(".dropdown").find(".btn").val($(this).data("value"));
+});
+
+// Bloodhound with Remote + Prefetch
+let wordSuggestions = new Bloodhound({
+    datumTokenizer: Bloodhound.tokenizers.obj.whitespace("word"),
+    queryTokenizer: Bloodhound.tokenizers.whitespace,
+    remote: {
+        url: "https://api.datamuse.com/words?sp=%QUERY*",
+        wildcard: "%QUERY"
+    },
+});
+ 
+// init Typeahead
+$(".typingahead").typeahead(
+{
+    minLength: 1,
+    highlight: true
+},
+{
+    name: "words",
+    source: wordSuggestions,
+    display: function(item) {
+        return item.word;
+    },
+    limit: 10,
+    templates: {
+        suggestion: function(item) {
+            return "<div class='suggestedItem'>"+ item.word +"</div>";
+        }
+    }
+}).on("typeahead:selected", function(e){
+    e.target.form.submit();
 });
 
 let alreadyExecuted = false;
 let target = document.querySelector(".testDiv");
 let observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
+        $(".newlyAddedWord").click(function(){
+            if ($(this).children("strong").html() !== $(".historyWord").first().children("strong").html()) {
+                $(".historyItem").prepend(`<p class="px-1 pt-2">${$(this).parent()[0].innerHTML}</p>`);
+            }
+        });
         $(".fourChoices").click(function(){
             $(this).removeClass("btn-outline-primary").addClass("btn-primary").addClass("clientChoice");
             $(this).siblings(".fourChoices").removeClass("clientChoice").removeClass("btn-primary").addClass("btn-outline-primary");
@@ -210,7 +284,7 @@ let observer = new MutationObserver(function(mutations) {
                 $("#mark").html(`<span class= "text-secondary">${message}</span> You answered <span class= "text-secondary">${trueAnswers}/${numOfQuestions} (${percentage}%)</span> of the questions correctly, so you receive ${article} <span class= "text-secondary">${grade}</span> grade.`);
                 $.getJSON( "/testResult", parameters, function(data) {
                     $(".testResult").hide();
-                    $(".resultTable").show();
+                    $(".resultTable").removeClass("d-none");
                     $(".tBody").prepend(`
                         <tr>
                             <th scope="row">${data.time}</th>

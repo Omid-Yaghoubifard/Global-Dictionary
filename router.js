@@ -28,7 +28,32 @@ router.get("/index", async (req,res) => {
     let unsplash;
     let searchHistory;
     if(req.query.query){
-        query = req.query.query.trim().toLowerCase();
+        query = req.query.query.trim()
+                               .toLowerCase()
+                               .replace(/isnt/g, "isn't")
+                               .replace(/wasnt/g, "wasn't")
+                               .replace(/werent/g, "weren't")
+                               .replace(/youre/g, "you're")
+                               .replace(/theyre/g, "they're")
+                               .replace(/youve/g, "you've")
+                               .replace(/theyve/g, "they've")
+                               .replace(/havent/g, "haven't")
+                               .replace(/hasnt/g, "hasn't")
+                               .replace(/hadnt/g, "hadn't")
+                               .replace(/couldnt/g, "couldn't")
+                               .replace(/wouldnt/g, "wouldn't")
+                               .replace(/shouldnt/g, "shouldn't")
+                               .replace(/mustnt/g, "mustn't")
+                               .replace(/youll/g, "you'll")
+                               .replace(/itll/g, "it'll")
+                               .replace(/theyll/g, "they'll")
+                               .replace(/doesnt/g, "doesn't")
+                               .replace(/didnt/g, "didn't")
+                               .replace(/dont /g, "don't ")
+                               .replace(/its /g, "it's ")
+                               .replace(/lets /g, "let's ")
+                               .replace(/ones /g, "one's ")
+                               .replace(/cant /g, "can't ");
     }
     function renderShow(){
         res.render("show",{
@@ -41,7 +66,52 @@ router.get("/index", async (req,res) => {
             user: req.user
         })
     }
-
+    function updateAndRender(){
+        if(!wordsApi.frequency && !wordsApi.word.includes(" ") && !wordsApi.source){
+            unsplash = undefined;
+        }
+        // console.log(unsplash);
+        if (req.user && wordsApi && wordsApi.results) {
+            const filteredArr = wordsApi.results.reduce((acc, current) => {
+                const x = acc.find(item => (item === current.partOfSpeech));
+                if (!x) {
+                return acc.concat([current.partOfSpeech]);
+                } else {
+                return acc;
+                }
+            }, []);
+            const newWord = {
+                word: wordsApi.word,
+                definition: wordsApi.results[0].definition,
+                wordType: filteredArr,
+                pronunciation: wordPronunciation
+            }
+            if(wordsApi.results.length > 1 && wordsApi.results[0].instanceOf && wordsApi.results[1].definition){
+                newWord.definition = wordsApi.results[1].definition
+            }
+            // console.log (req.user._id);
+            // CB is necessary to make $push in the following method work.
+            User.findByIdAndUpdate(req.user._id,
+                {$push: {queries: newWord} }, (err, success) => {
+                    if (err) {
+                        console.log(err);
+                    } 
+                }
+            )
+            User.findById(req.user._id).exec((err, userData) => {
+                let temp = userData.queries;
+                if (temp.length < 51) {
+                    searchHistory = temp.reverse();
+                } else{
+                    searchHistory = temp.slice(temp.length - 50).reverse();
+                }
+                renderShow()
+            });
+        } else{
+            renderShow()
+        }
+    }
+    
     axios.get(
         `https://api.unsplash.com/search/photos/?page=1&per_page=1&query=${query}&client_id=${process.env.UNSPLASHACCESSKEY}`
     )
@@ -102,51 +172,33 @@ router.get("/index", async (req,res) => {
             wordsApi = response.data;
         }
         // console.log(wordsApi);
-        if(!wordsApi.frequency && !wordsApi.word.includes(" ")){
-            unsplash = undefined;
-        }
-        // console.log(unsplash);
-        if (req.user && wordsApi && wordsApi.results) {
-            const filteredArr = wordsApi.results.reduce((acc, current) => {
-                const x = acc.find(item => (item === current.partOfSpeech));
-                if (!x) {
-                return acc.concat([current.partOfSpeech]);
-                } else {
-                return acc;
-                }
-            }, []);
-            const newWord = {
-                word: wordsApi.word,
-                definition: wordsApi.results[0].definition,
-                wordType: filteredArr,
-                pronunciation: wordPronunciation
-            }
-            // console.log (req.user._id);
-            // CB is necessary to make $push in the following method work.
-            User.findByIdAndUpdate(req.user._id,
-                {$push: {queries: newWord} }, (err, success) => {
-                    if (err) {
-                        console.log(err);
-                    } 
-                }
-            )
-            User.findById(req.user._id).exec((err, userData) => {
-                let temp = userData.queries;
-                if (temp.length < 51) {
-                    searchHistory = temp.reverse();
-                } else{
-                    searchHistory = temp.slice(temp.length - 50).reverse();
-                }
-                renderShow()
-            });
-        } else{
-            renderShow()
-        }
+        updateAndRender();
     })
     .catch((error)=>{
-        req.flash("noResult", `The word "${query}" was not found. Please make sure you have typed your search inquiry correctly and try again.`);
-        // console.log(error);
-        res.redirect("/")
+        axios.get(
+            `https://api.wordnik.com/v4/word.json/${query}/definitions?limit=200&includeRelated=false&sourceDictionaries=wiktionary&useCanonical=true&includeTags=false&api_key=${process.env.WORDNIK}`
+        )
+        .then((response)=>{
+            // console.log(response.data);
+            wordsApi = {
+                results: [],
+                word: query,
+                source: "Wikitionary"
+            }
+            wordsApi.results = response.data.reduce((acc, current) => {
+                return acc.concat({
+                    partOfSpeech: current.partOfSpeech,
+                    definition: current.text.replace(/<xref>/g, "").replace(/<\/xref>/g, "")   
+                });
+            }, []);
+            // console.log(wordsApi);
+            updateAndRender();
+        })
+        .catch((err)=>{
+            req.flash("noResult", `The word "${query}" was not found. Please make sure you have typed your search inquiry correctly and try again.`);
+            // console.log(err);
+            res.redirect("/")
+        })
     })
 });
 
@@ -349,37 +401,38 @@ router.get("/test", isLoggedIn, (req,res) => {
         }
         let temp = userData.queries.reverse().slice(0, 500);
         let searchHistory = temp.reduce((acc, current) => {
-            const x = acc.find(item => (!current.definition || item.definition === current.definition));
+            const x = acc.find(item => (!current.definition || current.wordType[0] === "phrase" || item.definition === current.definition));
             if (!x) {
             return acc.concat([current]);
             } else {
             return acc;
             }
         }, []);
-        if (searchHistory < 75) {
-            res.send(["Not enough data to create a test."]);
+        if (searchHistory.length < 75) {
+            res.send(["Sorry, not enough data to create a test. Please keep using the dictionary."]);
+        } else{
+            shuffleArray(searchHistory);
+            let sentences = searchHistory.slice(0, nOfQuestions);
+            let choices = searchHistory.slice(nOfQuestions);
+            let fullQuestions = [];
+            sentences.forEach(element => {
+                let randNum = Math.floor(Math.random() * choices.length)
+                randNum / choices.length < 0.5 ? randNum++ : randNum--;
+                let fourChoices = [
+                    [element.word, true],
+                    [choices[randNum].word],
+                    [choices[randNum + 1].word],
+                    [choices[randNum - 1].word]
+                ]
+                shuffleArray(fourChoices);
+                fullQuestions.push({
+                    definition: element.definition,
+                    fourChoices
+                })
+            });
+            // console.log(fullQuestions);
+            res.send(fullQuestions)
         }
-        shuffleArray(searchHistory);
-        let sentences = searchHistory.slice(0, nOfQuestions);
-        let choices = searchHistory.slice(nOfQuestions);
-        let fullQuestions = [];
-        sentences.forEach(element => {
-            let randNum = Math.floor(Math.random() * choices.length)
-            randNum / choices.length < 0.5 ? randNum++ : randNum--;
-            let fourChoices = [
-                [element.word, true],
-                [choices[randNum].word],
-                [choices[randNum + 1].word],
-                [choices[randNum - 1].word]
-            ]
-            shuffleArray(fourChoices);
-            fullQuestions.push({
-                definition: element.definition,
-                fourChoices
-            })
-        });
-        // console.log(fullQuestions);
-        res.send(fullQuestions)
     })
 })
 

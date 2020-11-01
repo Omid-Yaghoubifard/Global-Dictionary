@@ -5,26 +5,109 @@
 <!-- A brief introduction of what we do! -->
 
 <!-- A large seach bar and its button(s) -->
-
-<div class="container">
-    <div class="row align-items-center" style="min-height: calc(100vh - 66px);">
-        <div class="col-lg-8 mx-auto">
-            <form action="/index" method="GET">
-                <div class="input-group">
-                    <input type="text" class="form-control mr-2 search-box" name="query" aria-label="Search" placeholder="Search English" maxlength="100" required>
-                    <span class="input-group-btn">
-                        <button class="btn btn-primary search-btn" type="submit">
-                            <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-                                <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
-                                <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
-                              </svg>
-                        </button>
-                    </span>
-                </div>
-            </form>
+<div class="bg-primary">
+    <div class="container">
+        <div class="row align-items-center home-upper">
+            <div class="col-md-4 pl-md-4 pr-5 mt-4 mt-md-0 pt-4 pt-md-0">
+                <div class="text-white home-title"><span>GLOBAL</span> <br><span class="home-sec-title">DICTIONARY</span></div>
+            </div>
+            <div class="col-md-8">
+                <form action="/index" method="GET" class="searchForm">
+                    <div class="input-group">
+                        <input type="text" class="form-control search-box typingahead pl-3 mb-2 home-input" autocomplete="off" name="query" aria-label="Search" placeholder="Search English" maxlength="100" required>
+                        <span class="input-group-btn">
+                            <button class="btn btn-light search-btn ml-2" type="submit">
+                                <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-search" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+                                    <path fill-rule="evenodd" d="M10.442 10.442a1 1 0 0 1 1.415 0l3.85 3.85a1 1 0 0 1-1.414 1.415l-3.85-3.85a1 1 0 0 1 0-1.415z"/>
+                                    <path fill-rule="evenodd" d="M6.5 12a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11zM13 6.5a6.5 6.5 0 1 1-13 0 6.5 6.5 0 0 1 13 0z"/>
+                                </svg>
+                            </button>
+                        </span>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 </div>
+<div class="container my-5">
+    <div class="row align-items-top home-upper">
+        <div class="col-lg-6 mb-5">
+            <div class="card shadow-effect">
+                <img class="card-img-top" src="/pictures/nature.jpg" alt="Card image cap">
+                <div class="card-body">
+                    <p class="card-text">
+                        <ul class="text-primary list-unstyled">
+                            <li><i class="fas fa-angle-right"></i> <strong>4 billion trees</strong> are cut down each year to produce paper.</li>
+                            <li><i class="fas fa-angle-right"></i> It takes <strong>10 liters of water</strong> to produce a single A4-sheet of paper.</li>
+                            <li><i class="fas fa-angle-right"></i> We keep your search history automatically to help you <strong>use much less paper</strong>.</li>
+                            <% if(!user){ %>
+                                <li><i class="fas fa-angle-right"></i> Sign up now and <strong>join many others who care</strong> about our planet.</li>
+                            <% }else{ %>
+                                <li><i class="fas fa-angle-right"></i> We hope this can <strong>make a big difference</strong> in the long term.</li>
+                            <% } %>
+                            <li><i class="fas fa-angle-right"></i> Please <strong>spread the word</strong> if you share our concerns.</li>
+                        </ul>
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-1">
+        </div>
+        <div class="col-lg-5">
+            <div class="container">
+                <div class="row align-items-center home-upper">
+                    <% if(!user){ %>
+                        <div class="mb-5 col-12">
+                            <div class="card shadow-effect">
+                                <div class="card-body">
+                                    <h6 class="card-text text-primary font-weight-bold mb-2">Our users have access to:</h6>
+                                    <ul class="text-primary list-unstyled">
+                                        <li><i class="fas fa-angle-right"></i> A free record of their search history forever</li>
+                                        <li><i class="fas fa-angle-right"></i> As many personalized vocabulary tests as they want to</li>
+                                        <li><i class="fas fa-angle-right"></i> Detailed comparison of their past test results</li>
+                                    </ul>
+                                    <a class="btn btn-primary mr-2" href="/signup">Sign Up</a>
+                                    <a class="btn btn-primary" href="/login">Log In</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% } else{ %>
+                        <div class="mb-5 col-12">
+                            <div class="card shadow-effect">
+                                <div class="card-body">
+                                    <h5 class="card-title text-secondary mb-4 font-weight-bold">Welcome back <%= user.username %>,</h5>
+                                    <p class="card-text text-primary">Please select one of the following items to open it on a separate page:</p>
+                                    <a target="_blank" href="/profile#v-pills-searched" class="btn btn-primary mr-1 mb-2">Search History</a>
+                                    <a target="_blank" href="/profile#v-pills-test" class="btn btn-primary mr-1 mb-2">Take a Test</a>
+                                    <a target="_blank" href="/profile#v-pills-result" class="btn btn-primary mb-2">Test Results</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% } %>
+                    <div class="mb-5 col-12">
+                        <div class="card shadow-effect">
+                            <div class="card-body">
+                                <h5 class="card-title text-secondary mb-4 font-weight-bold">Practical tips for learning vocabulary:</h5>
+                                <ul class="text-primary list-unstyled">
+                                    <li><i class="fas fa-angle-right"></i> Keep a record of new words and phrases</li>
+                                    <li><i class="fas fa-angle-right"></i> Focus on the correct pronunciation of words</li>
+                                    <li><i class="fas fa-angle-right"></i> Learn new words and phrases in context</li>
+                                    <li><i class="fas fa-angle-right"></i> Associate new words with relevant images</li>
+                                    <li><i class="fas fa-angle-right"></i> Test your knowledge regularly</li>
+                                    <li><i class="fas fa-angle-right"></i> Focus mostly on practical words</li>
+                                    <li><i class="fas fa-angle-right"></i> Read as much as you can</li>
+                                    <li><i class="fas fa-angle-right"></i> Create relationships between words and phrases</li>
+                                    <li><i class="fas fa-angle-right"></i> And finally, practice, practice, practice!</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 
 
 <!-- Idiom (proverb) or word of the day. -->
