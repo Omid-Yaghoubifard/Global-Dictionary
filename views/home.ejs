@@ -1,14 +1,10 @@
 <%- include("partials/header") %>
 
 
-
-<!-- A brief introduction of what we do! -->
-
-<!-- A large seach bar and its button(s) -->
 <div class="bg-primary">
     <div class="container">
-        <div class="row align-items-center home-upper">
-            <div class="col-md-4 pl-md-4 pr-5 mt-4 mt-md-0 pt-4 pt-md-0">
+        <div class="row align-items-center home-upper mt-lg-5">
+            <div class="col-md-4 pl-md-4 pr-5 mt-5 mt-md-0 pt-4 pt-md-0">
                 <div class="text-white home-title"><span>GLOBAL</span> <br><span class="home-sec-title">DICTIONARY</span></div>
             </div>
             <div class="col-md-8">
@@ -30,6 +26,11 @@
     </div>
 </div>
 <div class="container my-5">
+    <% messages.forEach(function(message){ %>
+        <% if (typeof message === "object" && message.length) { %>
+            <p class="fade-out-items text-secondary mb-5"><%= message %></p>
+        <% } %>
+    <% }) %>
     <div class="row align-items-top home-upper">
         <div class="col-lg-6 mb-5">
             <div class="card shadow-effect">
@@ -41,7 +42,7 @@
                             <li><i class="fas fa-angle-right"></i> It takes <strong>10 liters of water</strong> to produce a single A4-sheet of paper.</li>
                             <li><i class="fas fa-angle-right"></i> We keep your search history automatically to help you <strong>use much less paper</strong>.</li>
                             <% if(!user){ %>
-                                <li><i class="fas fa-angle-right"></i> Sign up now and <strong>join many others who care</strong> about our planet.</li>
+                                <li><i class="fas fa-angle-right"></i> <a href="/signup" target="_blank">Sign up</a> now and <strong>join many others who care</strong> about our planet.</li>
                             <% }else{ %>
                                 <li><i class="fas fa-angle-right"></i> We hope this can <strong>make a big difference</strong> in the long term.</li>
                             <% } %>

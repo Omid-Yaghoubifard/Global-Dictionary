@@ -1,3 +1,5 @@
+$(".fade-out-items").delay(4000).fadeOut(500);
+
 $(".exampleRequest").on("click", function() {
     if ($("#moreExamples").html() === ""){
         let parameters = { search: $(this).val() }
@@ -45,6 +47,7 @@ $(".literatureRequest").on("click", function() {
                 $("#literature").prepend(`<p class="mb-0"><strong><i class="fas fa-angle-right"></i></strong> ${sentence.text || sentence}</p>`);
                 $("#literature").prepend("<blockquote class='blockquote text-right'>");
             });
+            $("#literature").append(`<a href="https://www.wordnik.com/words/${parameters.searchQuery}" target="_blank"><img src="pictures/wordnik_badge.png" alt=""></a>`)
         });
     } else{
         $(this).find("i").toggleClass("fa-minus").toggleClass("fa-plus");
@@ -62,8 +65,10 @@ $(".showDef").on("click", function() {
 })
 
 $(".historyWord").on("click", function() {
-    $(".historyItem").prepend(`<p class="px-1 pt-2">${$(this).parent()[0].innerHTML}</p>`);
-    $(".historyWord").first().addClass("newlyAddedWord")
+    if ($(this).children("strong").html() !== $(".historyWord").first().children("strong").html()) {
+        $(".historyItem").prepend(`<p class="px-1 pt-2">${$(this).parent()[0].innerHTML}</p>`);
+        $(".historyWord").first().addClass("newlyAddedWord")
+    }
 })
 
 let numOfQuestions;

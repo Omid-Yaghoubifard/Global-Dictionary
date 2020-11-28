@@ -15,7 +15,7 @@ router.get("/", (req,res) => {
         currentYear,
         user: req.user,
         path,
-        messages: [req.flash("loggedOut"), req.flash("noResult")]
+        messages: [req.flash("userSignedUp")]
     });
 })
 
@@ -89,15 +89,20 @@ router.get("/index", async (req,res) => {
             if(wordsApi.results.length > 1 && wordsApi.results[0].instanceOf && wordsApi.results[1].definition){
                 newWord.definition = wordsApi.results[1].definition
             }
+            User.findById(req.user._id).select({ "queries": { "$slice": -1 }}).exec((err,doc) => {
+                if (doc.queries[0].word !== query) {
+                    // console.log(doc.queries[0].word);
+                    User.findByIdAndUpdate(req.user._id,
+                        {$push: {queries: newWord} }, (err, success) => {
+                            if (err) {
+                                console.log(err);
+                            } 
+                        }
+                    )
+                }
+            })
             // console.log (req.user._id);
             // CB is necessary to make $push in the following method work.
-            User.findByIdAndUpdate(req.user._id,
-                {$push: {queries: newWord} }, (err, success) => {
-                    if (err) {
-                        console.log(err);
-                    } 
-                }
-            )
             User.findById(req.user._id).exec((err, userData) => {
                 let temp = userData.queries;
                 if (temp.length < 51) {
@@ -117,7 +122,11 @@ router.get("/index", async (req,res) => {
     )
     .then((resolved)=>{
         if (resolved.data.results[0] && resolved.data.results[0].urls.small) {
-            unsplash = resolved.data.results[0].urls.small;
+            unsplash = [
+                resolved.data.results[0].urls.small,
+                resolved.data.results[0].user.name,
+                resolved.data.results[0].user.links.html
+            ];
         }
     })
     .catch((err)=>{
@@ -125,9 +134,13 @@ router.get("/index", async (req,res) => {
     })
 
     await axios.get(
+        // `https://api.linguarobot.io/media/pronunciations/en/${query}-us.mp3`
+        // `https://lex-audio.useremarkable.com/mp3/${query}_us_1.mp3`
         `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${query}--_us_1.mp3`
     )
     .then((resolved)=>{
+        // wordPronunciation = `https://api.linguarobot.io/media/pronunciations/en/${query}-us.mp3`;
+        // `https://lex-audio.useremarkable.com/mp3/${query}_us_1.mp3`
         wordPronunciation = `https://ssl.gstatic.com/dictionary/static/sounds/oxford/${query}--_us_1.mp3`;
     })
     .catch(async (err)=>{
@@ -195,12 +208,22 @@ router.get("/index", async (req,res) => {
             updateAndRender();
         })
         .catch((err)=>{
-            req.flash("noResult", `The word "${query}" was not found. Please make sure you have typed your search inquiry correctly and try again.`);
+            req.flash("noResult", "No results found. Please check your spelling and try again.");
             // console.log(err);
-            res.redirect("/")
+            res.redirect("/noresult")
         })
     })
 });
+
+router.get("/noresult", (req,res) => {
+    let path = req.route.path;
+    res.render("noResult", {
+        currentYear,
+        user: req.user,
+        path,
+        messages: [req.flash("noResult")]
+    });
+})
 
 router.get("/exampleSearching", (req, res) => {
     let val = req.query.search;
@@ -320,14 +343,13 @@ router.post("/login", isNotLoggedIn,
 });
 
 router.get("/loginfailed", isNotLoggedIn, (req, res) => {
-    req.flash("failedLogIn", "Login failed! The username or password is incorrect.");
+    req.flash("failedLogIn", "Login failed! The username and/or password is incorrect.");
     res.redirect("/login");
 });
 
 // Log out
 router.get("/logout", isLoggedIn, (req, res) => {
     req.logout();
-    req.flash("loggedOut", "You have succesfully logged out!");
     res.redirect("/");
 });
 
@@ -344,22 +366,11 @@ router.get("/profile", isLoggedIn, (req,res) => {
             path,
             searchHistory,
             testResults,
-            user: req.user
+            user: req.user,
+            messages: [req.flash("passwordMatch"), req.flash("passwordChange"), req.flash("passwordChangeError")]
         })
     })
 });
-
-// // Change password
-// router.get("/profile/edit", isLoggedIn, (req,res) => {
-//     let path = req.route.path;
-//     res.render("profileEdit", {
-//         currentYear,
-//         path,
-//         user: req.user,
-//         messages: [req.flash("passwordMatch"), req.flash("passwordChangeError")]
-//     });
-// });
-
 
 router.post("/profile", isLoggedIn, 
     celebrate({
@@ -454,6 +465,42 @@ router.get("/testResult", isLoggedIn, (req,res) => {
             }
         }
     )
+})
+
+router.get("/about", (req,res) => {
+    let path = req.route.path;
+    res.render("about", {
+        currentYear,
+        user: req.user,
+        path
+    });
+})
+
+router.get("/privacy", (req,res) => {
+    let path = req.route.path;
+    res.render("privacy", {
+        currentYear,
+        user: req.user,
+        path
+    });
+})
+
+router.get("/terms", (req,res) => {
+    let path = req.route.path;
+    res.render("terms", {
+        currentYear,
+        user: req.user,
+        path
+    });
+})
+
+router.get("/faqs", (req,res) => {
+    let path = req.route.path;
+    res.render("faqs", {
+        currentYear,
+        user: req.user,
+        path
+    });
 })
 
 // 404

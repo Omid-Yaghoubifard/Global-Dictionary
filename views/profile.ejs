@@ -1,7 +1,7 @@
 <%- include("partials/header") %>
 
 <div class="container mt-4 pt-5">
-    <div class="row ml-1">
+    <div class="row ml-1 mt-lg-4">
         <div class="col-md-4 col-lg-3 mt-5">
           <div class="nav navbar-dark flex-column nav-pills shadow-effect myNav" id="v-pills-tab" role="tablist" aria-orientation="vertical">
             <a class="nav-link profileNav active" id="v-pills-profile-tab" data-toggle="pill" href="#v-pills-profile" role="tab" aria-controls="v-pills-profile" aria-selected="true"><strong>Profile <i class="fas fa-angle-double-right"></i></strong></a>
@@ -12,8 +12,13 @@
         </div>
         <div class="col-md-8 col-lg-9 mt-5">
             <div class="tab-content" id="v-pills-tabContent">
-                <div class="tab-pane fade shadow-effect show active main-background" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
+                <div class="tab-pane fade shadow-effect show active main-background mb-5" id="v-pills-profile" role="tabpanel" aria-labelledby="v-pills-profile-tab">
                     <div class="mb-2 p-1 pl-2 profile-title">
+                        <% messages.forEach(function(message){ %>
+                            <% if (typeof message === "object" && message.length) { %>
+                                <p class="fade-out-items text-secondary mb-4"><%= message %></p>
+                            <% } %>
+                        <% }) %>
                         <h6>Username: <a href="/profile"> <%= user.username %> </a> </h6>
                         <h6>Email: <a href="/profile"> <%= user.email %> </a> </h6>
                         <h6> Password: <span class="asterisk">**********</span></h6>

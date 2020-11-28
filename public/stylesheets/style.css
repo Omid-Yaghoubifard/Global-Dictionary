@@ -10,11 +10,23 @@ body {
     background: linear-gradient(to right, #CFDEF3, #E0EAFC); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */          
 }
 
+.navbar-fixed-top {
+    height: 50px;
+}
+
+.navbar-brand img {
+    height: 50px;
+}
+
 hr.style-one {
     border: 0;
     height: 1px;
     background: #333;
     background-image: linear-gradient(to right, #ccc, #333, #ccc);
+}
+
+.fade-out-items {
+    font-size: 17px;
 }
 
 .home-title {
@@ -28,6 +40,14 @@ hr.style-one {
     font-family: 'Lato', sans-serif;
     font-size: 37.5px;
     font-weight: 700;
+}
+
+.notices {
+    padding-top: 10%;
+    padding-bottom: 10%;
+    padding-left: 15%;
+    padding-right: 15%;
+    font-size: 1.05rem;
 }
 
 .wrapper {
@@ -55,8 +75,17 @@ hr.style-one {
     font-size: 1.25rem;
 }
 
+.about-icon {
+    font-size: 1.40rem;
+}
+
 .buttonIcon {
     font-size: 0.8rem;
+}
+
+
+.footerFont {
+    font-size: 0.85rem;
 }
 
 .defIcon {
@@ -169,6 +198,13 @@ hr.style-one {
     .home-upper {
         min-height: 100vh;
     }
+    .navbar-fixed-top {
+        height: 37px;
+    }
+    
+    .navbar-brand img {
+        height: 37px;
+    }
 }
 
 @media (max-width: 301px){
@@ -190,18 +226,6 @@ hr.style-one {
     .home-input {
         max-width: 163px;
 }}
-
-/* @media (min-width: 259px) and (max-width: 480px){
-    #front-top {
-        left: 57%;
-        top: 27%;
-        background: rgba(171, 205, 239, 0.5);
-        width: 250px;
-    } #front-top h3 {
-        font-size: 1rem;
-    } #front-top h1 {
-        font-size: 1.8rem;
-}} */
 
 @media (min-width: 576px) and (max-width: 767px){
     .home-title {
@@ -238,6 +262,13 @@ hr.style-one {
 @media (min-width: 992px){
     .home-upper {
         min-height: 50vh;
+    }
+    .navbar-fixed-top {
+        height: 70px;
+    }
+    
+    .navbar-brand img {
+        height: 70px;
     }
 }
 

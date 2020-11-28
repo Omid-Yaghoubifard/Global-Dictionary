@@ -2,7 +2,12 @@
 
 <div class="container mt-5 pb-5 pt-5">
     <div class="row">
-        <div class="col-sm-10 col-md-8 col-lg-6 col-xl-5 m-auto">
+        <div class="col-10 col-md-8 col-lg-6 col-xl-5 mx-auto mt-sm-4 mt-md-5 shadow-effect main-background">
+            <% messages.forEach(function(message){ %>
+                <% if (typeof message === "object" && message.length) { %>
+                    <p class="fade-out-items text-secondary mb-4"><%= message %></p>
+                <% } %>
+            <% }) %>
             <h4 class="mb-3 text-dark pb-1 open-sans-font">Log In Now!</h4>
             <form method="POST" action="/login">
                 <div class="form-group">
