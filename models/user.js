@@ -5,7 +5,12 @@ const User = new mongoose.Schema({
     username: {type: String, index: true, unique:true, required: true},
     email: String,
     password: String,
-    queries: {type: Array , "default": [] },
+    queries: [{
+      word: String,
+      definition: String,
+      pronunciation: String,
+      wordType: Array,
+    }],
     testResults: {type: Array , "default": [] }
 })
 

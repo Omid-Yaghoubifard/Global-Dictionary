@@ -55,6 +55,10 @@ hr.style-one {
     min-height:100%;
 }
 
+.breakAll {
+    word-break: break-all;
+}
+
 .search-box {
     height: 50px;
     border-radius: 0.8rem;
@@ -96,6 +100,7 @@ hr.style-one {
 .speaker {
     border: none;
     font-size: 1.1rem;
+    background-color: #ecf0f1;
 }
 
 .speaker:focus{
@@ -104,6 +109,10 @@ hr.style-one {
 
 .toToggle{
     display: none;
+}
+
+.delete-history:hover{
+    opacity: .5;
 }
 
 .shadow-effect {
@@ -196,7 +205,7 @@ hr.style-one {
         font-weight: 700;
     }
     .home-upper {
-        min-height: 100vh;
+        min-height: 80vh;
     }
     .navbar-fixed-top {
         height: 37px;
@@ -206,6 +215,21 @@ hr.style-one {
         height: 37px;
     }
 }
+
+@media (max-width: 359px){
+    .home-input {
+        max-width: 235px;
+}}
+
+@media (max-width: 325px){
+    .home-input {
+        max-width: 210px;
+}}
+
+@media (max-width: 316px){
+    .home-input {
+        max-width: 200px;
+}}
 
 @media (max-width: 301px){
     .home-input {
@@ -239,7 +263,7 @@ hr.style-one {
         font-weight: 700;
     }
     .home-upper {
-        min-height: 100vh;
+        min-height: 80vh;
     }
 }
 
@@ -255,7 +279,7 @@ hr.style-one {
         font-weight: 700;
     }
     .home-upper {
-        min-height: 70vh;
+        min-height: 65vh;
     }
 }
 

@@ -1,15 +1,8 @@
 <%- include("partials/header") %>
 
-
-<!-- The results should be divided by their source APIs. This gives the results more credability.
-
-On the sidebar we should have a list of latest search queries and test link (if logged in)
-if not logged in we should invite the user to log in. -->
-
-
 <div class="container mt-5 pt-5">
     <% if (wordsApi){ %>
-        <div class="row mt-4">
+        <div class="row mt-4 ml-lg-5">
             <div class="col-md-7 shadow-effect p-4 mt-md-4 mb-5 main-background mx-3 mx-md-0">
                     <h3 class="mb-3">
                         <% if (wordsApi.frequency && wordsApi.frequency > 3.5){ %>
@@ -163,7 +156,7 @@ if not logged in we should invite the user to log in. -->
                         <div class="card">
                             <img class="card-img-top shadow-effect" src="<%= unsplash[0] %>" alt="">
                         </div>
-                        <p class="card-text ml-1 mt-2"><small class="text-muted">Photo by <a href="<%= unsplash[2] %>" target="_blank"><%= unsplash[1] %></a> on <a href="https://unsplash.com/" target="_blank">Unsplash</a></small></p>
+                        <p class="card-text ml-1 mt-2"><small class="text-muted">Photo by <a href="<%= unsplash[2] %>?utm_source=Global_Dictionary&utm_medium=referral" target="_blank"><%= unsplash[1] %></a> on <a href="https://unsplash.com/?utm_source=Global_Dictionary&utm_medium=referral" target="_blank">Unsplash</a></small></p>
                     </div>
                 <% } %>
                 <% if (searchHistory && searchHistory.length){ %>
@@ -180,6 +173,9 @@ if not logged in we should invite the user to log in. -->
             </div>
         </div>
     <% } %>
+            
 </div>
+
+<script type="text/javascript" src="//s7.addthis.com/js/300/addthis_widget.js#pubid=ra-60016677a97d4729"></script>
 
 <%- include("partials/footer") %>

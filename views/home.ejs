@@ -64,7 +64,7 @@
                                     <h6 class="card-text text-primary font-weight-bold mb-2">Our users have access to:</h6>
                                     <ul class="text-primary list-unstyled">
                                         <li><i class="fas fa-angle-right"></i> A free record of their search history forever</li>
-                                        <li><i class="fas fa-angle-right"></i> As many personalized vocabulary tests as they want to</li>
+                                        <li><i class="fas fa-angle-right"></i> As many personalized vocabulary tests as they wish to take</li>
                                         <li><i class="fas fa-angle-right"></i> Detailed comparison of their past test results</li>
                                     </ul>
                                     <a class="btn btn-primary mr-2" href="/signup">Sign Up</a>
@@ -87,20 +87,61 @@
                     <% } %>
                     <div class="mb-5 col-12">
                         <div class="card shadow-effect">
-                            <div class="card-body">
-                                <h5 class="card-title text-secondary mb-4 font-weight-bold">Practical tips for learning vocabulary:</h5>
-                                <ul class="text-primary list-unstyled">
-                                    <li><i class="fas fa-angle-right"></i> Keep a record of new words and phrases</li>
-                                    <li><i class="fas fa-angle-right"></i> Focus on the correct pronunciation of words</li>
-                                    <li><i class="fas fa-angle-right"></i> Learn new words and phrases in context</li>
-                                    <li><i class="fas fa-angle-right"></i> Associate new words with relevant images</li>
-                                    <li><i class="fas fa-angle-right"></i> Test your knowledge regularly</li>
-                                    <li><i class="fas fa-angle-right"></i> Focus mostly on practical words</li>
-                                    <li><i class="fas fa-angle-right"></i> Read as much as you can</li>
-                                    <li><i class="fas fa-angle-right"></i> Create relationships between words and phrases</li>
-                                    <li><i class="fas fa-angle-right"></i> And finally, practice, practice, practice!</li>
-                                </ul>
-                            </div>
+                            <% if (wordsApi && wordsApi.results && wordsApi.results[0]){ %>
+                                <h4 class="card-header">Random Word</h4>
+                                <div class="card-body">
+                                <div class="mb-3">
+                                    <h6>
+                                        <% if (wordsApi.frequency && wordsApi.frequency > 3.5){ %>
+                                            <small><i class="fas fa-key key"></i></small> 
+                                        <% } %>
+                                        <a class="h5" href="/index?query=<%= wordsApi.word %>" target="_blank">
+                                            <%= wordsApi.word %>
+                                        </a>
+                                        <span class="phonetics">
+                                            <% if (wordsApi.pronunciation){ %>
+                                                <% if (wordsApi.pronunciation.noun){ %>
+                                                    <strong>noun</strong> /<%= wordsApi.pronunciation.noun %>/
+                                                <% } if (wordsApi.pronunciation.verb){ %>
+                                                    <strong>verb</strong> /<%= wordsApi.pronunciation.verb %>/
+                                                <% } else if (wordsApi.pronunciation.all){ %>
+                                                    /<%= wordsApi.pronunciation.all %>/
+                                                <% } if (wordsApi.pronunciation.adjective){ %>
+                                                    <strong>adjective</strong> /<%= wordsApi.pronunciation.adjective %>/
+                                                <% } else if (wordsApi.pronunciation && wordsApi.pronunciation.length){ %>
+                                                    /<%= wordsApi.pronunciation %>/
+                                                <% } %>
+                                            <% } %>
+                                        </span>
+                                    </h6>
+                                </div>
+                                <% let def = wordsApi.results ? wordsApi.results[0] :  false %>
+                                <div>
+                                    <h6 class="text-success">
+                                        <% if(def.partOfSpeech){ %>
+                                            <span class="badge badge-info"><%= def.partOfSpeech %></span>
+                                        <% } %>
+                                        &nbsp;
+                                        <%= def.definition %>
+                                    </h6>
+                                    <a href="/index?query=<%= wordsApi.word %>" target="_blank" class="btn btn-outline-primary mt-2">Read more</a>
+                                </div>
+                            <% } else{ %>
+                                <div class="card-body">
+                                    <h5 class="card-title text-secondary mb-4 font-weight-bold">Practical tips for learning vocabulary:</h5>
+                                    <ul class="text-primary list-unstyled">
+                                        <li><i class="fas fa-angle-right"></i> Keep a record of new words and phrases</li>
+                                        <li><i class="fas fa-angle-right"></i> Focus on the correct pronunciation of words</li>
+                                        <li><i class="fas fa-angle-right"></i> Learn new words and phrases in context</li>
+                                        <li><i class="fas fa-angle-right"></i> Associate new words with relevant images</li>
+                                        <li><i class="fas fa-angle-right"></i> Test your knowledge regularly</li>
+                                        <li><i class="fas fa-angle-right"></i> Focus mostly on practical words</li>
+                                        <li><i class="fas fa-angle-right"></i> Read as much as you can</li>
+                                        <li><i class="fas fa-angle-right"></i> Create relationships between words and phrases</li>
+                                        <li><i class="fas fa-angle-right"></i> And finally, practice, practice, practice!</li>
+                                    </ul>
+                                </div>
+                            <% } %>
                         </div>
                     </div>
                 </div>

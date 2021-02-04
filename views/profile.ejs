@@ -37,7 +37,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="tab-pane shadow-effect fade mb-5 py-3 main-background testDiv" id="v-pills-searched" role="tabpanel" aria-labelledby="v-pills-searched-tab">
+                <div class="tab-pane shadow-effect fade mb-5 py-3 main-background vocDiv" id="v-pills-searched" role="tabpanel" aria-labelledby="v-pills-searched-tab">
                     <% if(searchHistory && searchHistory.length){ %>
                         <p class="h6 px-1 pb-4 text-primary"><i class="fas fa-angle-right"></i> Clicking on an entry will provide you with more details on a separate page and move it to the top.</p>
                         <p class="h6 px-1 showDef text-primary d-inline">
@@ -48,7 +48,8 @@
                         <hr class="style-one">
                         <div class="historyItem">
                         <% searchHistory.forEach(item =>{ %>
-                            <p class="px-1 pt-2">
+                            <p class="px-1 pt-2 to-toggle-right">
+                                <i class="fas fa-trash-alt mr-2 toToggle delete-history"></i>
                                 <a href="/index?query=<%= item.word %>" target="_blank" class="historyWord"><strong class="text-secondary"><%= item.word %></strong></a>
                                 <% if (item.pronunciation){ %>
                                     <audio id="<%= item.pronunciation %>" src="<%= item.pronunciation %>">pronunciation</audio>

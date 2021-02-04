@@ -3,7 +3,7 @@ function isNotLoggedIn(req, res, next){
         next();
     } else{
         req.flash("loggedInUser", "You are already logged in!");
-        res.redirect("/index/1");
+        res.redirect("/profile");
     }
 };
 

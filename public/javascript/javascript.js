@@ -1,8 +1,22 @@
 $(".fade-out-items").delay(4000).fadeOut(500);
 
+$(".to-toggle-right").mouseenter(function() {
+    $(this).find(".delete-history").show();
+});
+
+$(".to-toggle-right").mouseleave(function() {
+    $(this).find(".delete-history").hide();
+});
+
+$(".delete-history").on("click", function() {
+    let parameters = { word: $(this).siblings("a").text() };
+    $.getJSON( "/deleteWords", parameters, data =>{});
+    $(this).parent(".to-toggle-right").remove();
+})
+
 $(".exampleRequest").on("click", function() {
     if ($("#moreExamples").html() === ""){
-        let parameters = { search: $(this).val() }
+        let parameters = { search: $(this).val() };
         $(this).addClass("btn-primary").removeClass("btn-outline-primary");
         $(this).find("i").removeClass("fa-plus").addClass("fa-minus");
         $("#showMore").html() === "Fewer" ? $("#showMore").html("More") : $("#showMore").html("Fewer");
@@ -43,11 +57,13 @@ $(".literatureRequest").on("click", function() {
             }, []);
             filteredArr.forEach(function (sentence) {
                 $("#literature").prepend("</blockquote>");
-                $("#literature").prepend(`<footer class="blockquote-footer text-right mb-4">${sentence.title || ""}</footer>`);
+                $("#literature").prepend(`<footer class="blockquote-footer text-right mb-4 breakAll">${sentence.title || ""}</footer>`);
                 $("#literature").prepend(`<p class="mb-0"><strong><i class="fas fa-angle-right"></i></strong> ${sentence.text || sentence}</p>`);
                 $("#literature").prepend("<blockquote class='blockquote text-right'>");
             });
-            $("#literature").append(`<a href="https://www.wordnik.com/words/${parameters.searchQuery}" target="_blank"><img src="pictures/wordnik_badge.png" alt=""></a>`)
+            if (filteredArr.length > 1) {
+                $("#literature").append(`<a href="https://www.wordnik.com/words/${parameters.searchQuery}" target="_blank"><img src="pictures/wordnik_badge.png" alt=""></a>`)
+            }
         });
     } else{
         $(this).find("i").toggleClass("fa-minus").toggleClass("fa-plus");
@@ -59,16 +75,20 @@ $(".literatureRequest").on("click", function() {
 $(".showDef").on("click", function() {
     $(this).toggleClass("text-primary").toggleClass("text-muted");
     $(this).find("i").toggleClass("fa-toggle-on").toggleClass("fa-toggle-off");
-    $(".profile-def").each(function(){
-        $(this).slideToggle(1);
+    $(".to-toggle-right").each(function(){
+        if ($(this).css("display") !== "none" && $(this).children(".profile-def").css("display") !== "none"){
+            $(this).children(".profile-def").hide();
+        } else if ($(this).css("display") !== "none" && $(this).children(".profile-def").css("display") === "none"){
+            $(this).children(".profile-def").show();
+        }
     });
 })
 
 $(".historyWord").on("click", function() {
-    if ($(this).children("strong").html() !== $(".historyWord").first().children("strong").html()) {
-        $(".historyItem").prepend(`<p class="px-1 pt-2">${$(this).parent()[0].innerHTML}</p>`);
-        $(".historyWord").first().addClass("newlyAddedWord")
-    }
+    $(".historyItem").prepend(`<p class="px-1 pt-2 to-toggle-right">${$(this).parent()[0].innerHTML}</p>`);
+    $(".historyWord").first().addClass("newlyAddedWord");
+    $(".fa-trash-alt").first().css("display", "none");
+    $(this).parent(".to-toggle-right").remove();
 })
 
 let numOfQuestions;
@@ -130,6 +150,9 @@ $(".cancelChange").click(function(){
 $(() => {
     $(".btnLoader").click(() => {
         $("#v-pills-searched p:hidden").slice(0, 10).show();
+        if ($(".showDef").hasClass("text-muted")) {
+            $("#v-pills-searched p:visible").slice(-10).children(".profile-def").hide();
+        }
         if ($("#v-pills-searched p").length === $("#v-pills-searched p:visible").length) {
             $("button.btnLoader").removeClass("btn-outline-primary").addClass("btn-primary").addClass("disabled");
             $("button.btnLoader").html("End of results");
@@ -210,13 +233,27 @@ $(".typingahead").typeahead(
 });
 
 let alreadyExecuted = false;
-let target = document.querySelector(".testDiv");
+let target1 = document.querySelector(".testDiv");
+let target2 = document.querySelector(".vocDiv");
 let observer = new MutationObserver(function(mutations) {
     mutations.forEach(function(mutation) {
         $(".newlyAddedWord").click(function(){
             if ($(this).children("strong").html() !== $(".historyWord").first().children("strong").html()) {
-                $(".historyItem").prepend(`<p class="px-1 pt-2">${$(this).parent()[0].innerHTML}</p>`);
+                $(".historyItem").prepend(`<p class="px-1 pt-2 to-toggle-right">${$(this).parent()[0].innerHTML}</p>`);
             }
+            $(".fa-trash-alt").first().css("display", "none");
+            $(this).parent(".to-toggle-right").remove();
+        });
+        $(".to-toggle-right").mouseenter(function() {
+            $(this).find(".delete-history").show();
+        });
+        $(".to-toggle-right").mouseleave(function() {
+            $(this).find(".delete-history").hide();
+        });
+        $(".delete-history").on("click", function() {
+            let parameters = { word: $(this).siblings("a").text() };
+            $.getJSON( "/deleteWords", parameters, data =>{});
+            $(this).parent(".to-toggle-right").remove();
         });
         $(".fourChoices").click(function(){
             $(this).removeClass("btn-outline-primary").addClass("btn-primary").addClass("clientChoice");
@@ -310,4 +347,5 @@ let observerConfig = {
     characterData: true,
     subtree : true
 };
-observer.observe(target, observerConfig);
+observer.observe(target1, observerConfig);
+observer.observe(target2, observerConfig);

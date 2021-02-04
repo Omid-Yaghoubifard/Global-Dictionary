@@ -5,18 +5,38 @@ const express            = require("express"),
       isLoggedIn         = require("./middlewares/isLoggedIn"),
       isNotLoggedIn      = require("./middlewares/isNotLoggedIn"),
       axios              = require("axios"),
-      currentYear        = new Date().getFullYear(),
       { celebrate, Joi } = require("celebrate");
 
 // Homepage
 router.get("/", (req,res) => {
     let path = req.route.path;
-    res.render("home", {
-        currentYear,
-        user: req.user,
-        path,
-        messages: [req.flash("userSignedUp")]
-    });
+    let wordsApi = false;
+    function renderHome(){
+        res.render("home", {
+            user: req.user,
+            path,
+            wordsApi,
+            messages: [req.flash("userSignedUp")]
+        });
+    }
+    axios({
+        "method":"GET",
+        "url": "https://wordsapiv1.p.rapidapi.com/words/?random=true&hasDetails=frequency,definitions",
+        "headers":{
+            "content-type": "application/octet-stream",
+            "x-rapidapi-host": "wordsapiv1.p.rapidapi.com",
+            "x-rapidapi-key": process.env.RAPIDAPI,
+            "useQueryString": true
+        }
+    })
+    .then((response)=>{
+        wordsApi = response.data;
+        // console.log(response.data);
+        renderHome();
+    })
+    .catch(err=>{
+        renderHome();
+    })
 })
 
 // show
@@ -57,7 +77,6 @@ router.get("/index", async (req,res) => {
     }
     function renderShow(){
         res.render("show",{
-            currentYear,
             path,
             wordsApi,
             wordPronunciation,
@@ -72,25 +91,25 @@ router.get("/index", async (req,res) => {
         }
         // console.log(unsplash);
         if (req.user && wordsApi && wordsApi.results) {
-            const filteredArr = wordsApi.results.reduce((acc, current) => {
-                const x = acc.find(item => (item === current.partOfSpeech));
-                if (!x) {
-                return acc.concat([current.partOfSpeech]);
-                } else {
-                return acc;
+            User.findByIdAndUpdate(req.user._id, { $pull: { queries : { word : query } } }, (err, updated) =>{
+                const filteredArr = wordsApi.results.reduce((acc, current) => {
+                    const x = acc.find(item => (item === current.partOfSpeech));
+                    if (!x) {
+                        return acc.concat([current.partOfSpeech]);
+                    } else {
+                        return acc;
+                    }
+                }, []);
+                const newWord = {
+                    word: wordsApi.word,
+                    definition: wordsApi.results[0].definition,
+                    wordType: filteredArr,
+                    pronunciation: wordPronunciation
                 }
-            }, []);
-            const newWord = {
-                word: wordsApi.word,
-                definition: wordsApi.results[0].definition,
-                wordType: filteredArr,
-                pronunciation: wordPronunciation
-            }
-            if(wordsApi.results.length > 1 && wordsApi.results[0].instanceOf && wordsApi.results[1].definition){
-                newWord.definition = wordsApi.results[1].definition
-            }
-            User.findById(req.user._id).select({ "queries": { "$slice": -1 }}).exec((err,doc) => {
-                if (doc.queries[0].word !== query) {
+                if(wordsApi.results.length > 1 && wordsApi.results[0].instanceOf && wordsApi.results[1].definition){
+                    newWord.definition = wordsApi.results[1].definition
+                }
+                User.findById(req.user._id).select({ "queries": { "$slice": -1 }}).exec((err,doc) => {
                     // console.log(doc.queries[0].word);
                     User.findByIdAndUpdate(req.user._id,
                         {$push: {queries: newWord} }, (err, success) => {
@@ -99,7 +118,7 @@ router.get("/index", async (req,res) => {
                             } 
                         }
                     )
-                }
+                })
             })
             // console.log (req.user._id);
             // CB is necessary to make $push in the following method work.
@@ -127,6 +146,9 @@ router.get("/index", async (req,res) => {
                 resolved.data.results[0].user.name,
                 resolved.data.results[0].user.links.html
             ];
+            axios.get(
+                `${resolved.data.results[0].links.download_location}/?client_id=${process.env.UNSPLASHACCESSKEY}`
+            )
         }
     })
     .catch((err)=>{
@@ -218,7 +240,6 @@ router.get("/index", async (req,res) => {
 router.get("/noresult", (req,res) => {
     let path = req.route.path;
     res.render("noResult", {
-        currentYear,
         user: req.user,
         path,
         messages: [req.flash("noResult")]
@@ -275,7 +296,6 @@ router.get("/literatureSearching", (req, res) => {
 router.get("/signup", isNotLoggedIn, (req,res) => {
     let path = req.route.path;
     res.render("signup", {
-        currentYear,
         path,
         user: req.user,
         messages: [req.flash("passwordMatch"), req.flash("signUpUserError"), req.flash("signUpEmailError")]
@@ -323,7 +343,6 @@ router.post("/signup", isNotLoggedIn,
 router.get("/login", isNotLoggedIn, (req,res) => {
     let path = req.route.path;
     res.render("login", {
-        currentYear,
         path,
         user: req.user,
         messages: [req.flash("failedLogIn"), req.flash("PleaseLogIn")]
@@ -362,12 +381,11 @@ router.get("/profile", isLoggedIn, (req,res) => {
         let results = userData.testResults;
         let testResults = results.reverse();
         res.render("profile", {
-            currentYear,
             path,
             searchHistory,
             testResults,
             user: req.user,
-            messages: [req.flash("passwordMatch"), req.flash("passwordChange"), req.flash("passwordChangeError")]
+            messages: [req.flash("passwordMatch"), req.flash("passwordChange"), req.flash("passwordChangeError"), req.flash("loggedInUser")]
         })
     })
 });
@@ -395,10 +413,20 @@ router.post("/profile", isLoggedIn,
                     req.flash("passwordChangeError", "There was an error. Please try again");
                     res.redirect("/profile");
                 }
-            })
+                })
+                .catch(err => {
+                    req.flash("passwordChangeError", "There was an error. Please try again");
+                    res.redirect("/profile");
+                })
         }
     }
 );
+
+// delete words
+router.get("/deleteWords", isLoggedIn, (req, res) =>{
+    let delWord = req.query.word;
+    User.findByIdAndUpdate(req.user._id, { $pull: { queries : { word : delWord } } }, (err, updated) =>{})
+});
 
 router.get("/test", isLoggedIn, (req,res) => {
     let nOfQuestions = req.query.numOfQues;
@@ -470,7 +498,6 @@ router.get("/testResult", isLoggedIn, (req,res) => {
 router.get("/about", (req,res) => {
     let path = req.route.path;
     res.render("about", {
-        currentYear,
         user: req.user,
         path
     });
@@ -479,7 +506,6 @@ router.get("/about", (req,res) => {
 router.get("/privacy", (req,res) => {
     let path = req.route.path;
     res.render("privacy", {
-        currentYear,
         user: req.user,
         path
     });
@@ -488,16 +514,6 @@ router.get("/privacy", (req,res) => {
 router.get("/terms", (req,res) => {
     let path = req.route.path;
     res.render("terms", {
-        currentYear,
-        user: req.user,
-        path
-    });
-})
-
-router.get("/faqs", (req,res) => {
-    let path = req.route.path;
-    res.render("faqs", {
-        currentYear,
         user: req.user,
         path
     });
