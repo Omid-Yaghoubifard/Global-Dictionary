@@ -92,6 +92,14 @@ hr.style-one {
     font-size: 0.85rem;
 }
 
+.footer-icon{
+    color: white;
+}
+
+.footer-icon:hover{
+    color: #CFDEF3;
+}
+
 .defIcon {
     vertical-align: top;
     margin-top: 2px;

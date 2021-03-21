@@ -5,6 +5,7 @@ const express            = require("express"),
       isLoggedIn         = require("./middlewares/isLoggedIn"),
       isNotLoggedIn      = require("./middlewares/isNotLoggedIn"),
       axios              = require("axios"),
+      nodemailer         = require("nodemailer"),
       { celebrate, Joi } = require("celebrate");
 
 // Homepage
@@ -518,6 +519,40 @@ router.get("/terms", (req,res) => {
         path
     });
 })
+
+router.get("/contact", (req, res) =>{
+    let path = req.route.path;
+    res.render("contact", {
+        user: req.user,
+        path
+    });
+})
+
+router.post("/contact",
+    celebrate({
+        body: Joi.object().keys({
+            name: Joi.string().max(1024).trim().required(),
+            email: Joi.string().max(256).email().lowercase().trim().required(),
+            message: Joi.string().max(5096).trim().required()
+        }),
+    }),
+    (req, res) =>{
+        let transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.PASSWORD
+            },
+        });
+        let info = {
+            from: req.body.email,
+            to: process.env.EMAILTO,
+            subject: `Global Dictionary Message | name: ${req.body.name} | email: ${req.body.email}`,
+            text: req.body.message
+        };
+        transporter.sendMail(info, (err, sent)=>{})
+    }
+);
 
 // 404
 router.get("*", (req, res) => {

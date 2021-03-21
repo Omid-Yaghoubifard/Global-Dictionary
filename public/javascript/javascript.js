@@ -1,5 +1,17 @@
 $(".fade-out-items").delay(4000).fadeOut(500);
 
+$(".contact-form").on("submit", e =>{
+    e.preventDefault();
+    let name = $("#form-name").val().trim();
+    let email = $("#form-email").val().trim();
+    let message = $("#form-message").val().trim();
+    let data = {name, email, message};
+    $("#form-name").val("");
+    $("#form-email").val("");
+    $("#form-message").val("");
+    $.post("/contact", data, function(){})
+});
+
 $(".to-toggle-right").mouseenter(function() {
     $(this).find(".delete-history").show();
 });

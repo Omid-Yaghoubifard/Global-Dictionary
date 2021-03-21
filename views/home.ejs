@@ -95,9 +95,7 @@
                                         <% if (wordsApi.frequency && wordsApi.frequency > 3.5){ %>
                                             <small><i class="fas fa-key key"></i></small> 
                                         <% } %>
-                                        <a class="h5" href="/index?query=<%= wordsApi.word %>" target="_blank">
-                                            <%= wordsApi.word %>
-                                        </a>
+                                        <a class="h5" href="/index?query=<%= wordsApi.word %>" target="_blank"><%= wordsApi.word %></a>
                                         <span class="phonetics">
                                             <% if (wordsApi.pronunciation){ %>
                                                 <% if (wordsApi.pronunciation.noun){ %>
